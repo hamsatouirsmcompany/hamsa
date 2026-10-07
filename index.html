@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>همسة للسياحة | عروض الحج والعمرة</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@600;700&family=Tajawal:wght@400;500;700&display=swap">
+<style>
+:root{--ink:#0e2a38;--ink2:#16384a;--gold:#f9c614;--sky:#dceef9;--paper:#f7f5ef;--text:#1b2a33;--mute:#5d6d77}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Tajawal,sans-serif;background:var(--paper);color:var(--text);line-height:1.7}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+header{background:var(--ink);position:sticky;top:0;z-index:20}
+.bar{max-width:1100px;margin:auto;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bar img{height:54px;display:block}
+nav{display:flex;gap:18px;font-weight:500}
+nav a{color:var(--sky);text-decoration:none}
+nav a:hover{color:var(--gold)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:8px;padding:9px 18px;cursor:pointer;background:var(--gold);color:var(--ink);text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--sky);border:1.5px solid var(--sky)}
+.btn.sm{padding:5px 12px;font-size:.9rem}
+.btn.red{background:#b3261e;color:#fff}
+.hero{background:var(--ink) linear-gradient(180deg,var(--ink),var(--ink2));color:#fff;padding:56px 20px 72px;text-align:center;border-bottom:8px solid var(--gold)}
+.hero h1{font-family:'Reem Kufi',serif;font-size:clamp(2rem,6vw,3.6rem);margin:0 0 10px;line-height:1.3}
+.hero p{max-width:560px;margin:0 auto 24px;color:var(--sky);font-size:1.1rem}
+main{max-width:1100px;margin:auto;padding:20px}
+section{padding:36px 0}
+.sec-head{display:flex;align-items:end;justify-content:space-between;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:20px;flex-wrap:wrap}
+.sec-head h2{font-family:'Reem Kufi',serif;font-size:2rem;margin:0;color:var(--ink)}
+.sec-head a{font-weight:700;color:var(--ink2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.card{background:#fff;border-radius:14px;overflow:hidden;border:1px solid #e3e0d5;display:flex;flex-direction:column}
+.card .ph{aspect-ratio:16/10;background:var(--sky) center/cover}
+.card .bd{padding:14px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card h3{margin:0;font-size:1.2rem;color:var(--ink)}
+.card .dt{color:var(--mute);font-size:.95rem;white-space:pre-line}
+.price{font-family:'Reem Kufi',serif;font-size:1.5rem;color:var(--ink);margin-top:auto}
+.price b{background:var(--gold);padding:0 8px;border-radius:6px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.empty{color:var(--mute);padding:20px;border:2px dashed #cfcab8;border-radius:12px;text-align:center}
+footer{background:var(--ink);color:var(--sky);text-align:center;padding:24px;margin-top:40px}
+dialog{border:0;border-radius:14px;padding:24px;width:min(440px,92vw);font-family:inherit}
+dialog::backdrop{background:#0e2a38aa}
+dialog h3{margin:0 0 14px;font-family:'Reem Kufi',serif;font-size:1.5rem}
+label{display:block;font-weight:700;margin:10px 0 4px}
+input,select,textarea{width:100%;font:inherit;padding:9px 11px;border:1.5px solid #b9c4cb;border-radius:8px}
+.msg{color:#b3261e;min-height:1.4em;margin-top:8px}
+.admin-bar{background:var(--gold);color:var(--ink);padding:8px 20px;display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-weight:700}
+@media(max-width:640px){nav{display:none}}
+</style>
+</head>
+<body>
+
+<div class="admin-bar" id="adminBar">
+  <span>وضع المدير: تقدر تضيف وتعدل وتحذف العروض</span>
+  <span class="row"><button class="btn sm" style="background:var(--ink);color:#fff" id="addBtn">إضافة عرض</button><button class="btn sm" style="background:#fff" id="logoutBtn">تسجيل خروج</button></span>
+</div>
+
+<header>
+  <div class="bar">
+    <img src="logo.png" alt="همسة للسياحة">
+    <nav id="nav"></nav>
+    <button class="btn ghost" id="loginBtn">تسجيل دخول</button>
+  </div>
+</header>
+
+<div class="hero">
+  <h1>رحلتك إلى الحرمين تبدأ من همسة</h1>
+  <p>عروض الحج والعمرة وبرامج التيسير في مكان واحد. اختر العرض المناسب وتواصل معنا للحجز.</p>
+  <a class="btn" href="#sections">شاهد العروض</a>
+</div>
+
+<main id="sections"></main>
+
+<footer>© همسة للسياحة — جميع الحقوق محفوظة</footer>
+
+<dialog id="loginDlg">
+  <h3>دخول المدير</h3>
+  <label for="u">اسم المستخدم</label><input id="u" autocomplete="username">
+  <label for="p">كلمة المرور</label><input id="p" type="password" autocomplete="current-password">
+  <div class="msg" id="loginMsg"></div>
+  <div class="row"><button class="btn" id="doLogin">دخول</button><button class="btn ghost" style="color:var(--ink);border-color:var(--ink)" data-close>إلغاء</button></div>
+</dialog>
+
+<dialog id="offerDlg">
+  <h3 id="offerTitle">عرض جديد</h3>
+  <label for="f_section">القسم</label><select id="f_section"></select>
+  <label for="f_title">اسم العرض</label><input id="f_title">
+  <label for="f_price">السعر</label><input id="f_price" placeholder="مثال: 45,000 جنيه">
+  <label for="f_details">التفاصيل</label><textarea id="f_details" rows="4"></textarea>
+  <label for="f_image">رابط صورة (اختياري)</label><input id="f_image" dir="ltr">
+  <label for="f_link">رابط الحجز / واتساب (اختياري)</label><input id="f_link" dir="ltr">
+  <div class="msg" id="offerMsg"></div>
+  <div class="row"><button class="btn" id="saveOffer">حفظ</button><button class="btn ghost" style="color:var(--ink);border-color:var(--ink)" data-close>إلغاء</button></div>
+</dialog>
+
+<script>
+/* ===== الإعدادات: غيّر الرابط بعد نشر Apps Script ===== */
+const API_URL = "PUT_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+const WHATSAPP = ""; // رقم واتساب بالصيغة الدولية بدون +، مثال 201001234567
+
+const SECTIONS = [
+  {id:"umrah", name:"عروض العمرة", site:"https://amrkhaledmohamedeng-create.github.io/hamsa-torism/"},
+  {id:"tayser", name:"عروض التيسير", site:"https://hamsatouirsmcompany.github.io/TAYSER/"},
+  {id:"hajj", name:"عروض الحج", site:"https://amrkhaledmohamedeng-create.github.io/alhaju/"}
+];
+
+let offers = [], token = sessionStorage.getItem("hamsa_token") || "", editingId = null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+async function api(body){
+  const r = await fetch(API_URL, {method:"POST", body:JSON.stringify(body)});
+  return r.json();
+}
+
+async function load(){
+  try{
+    const r = await fetch(API_URL + "?action=list");
+    const d = await r.json();
+    offers = d.offers || [];
+  }catch(e){ offers = []; }
+  render();
+}
+
+function render(){
+  $("nav").innerHTML = SECTIONS.map(s => `<a href="#${s.id}">${s.name}</a>`).join("");
+  $("sections").innerHTML = SECTIONS.map(s => {
+    const list = offers.filter(o => o.section === s.id);
+    const cards = list.map(o => {
+      const wa = WHATSAPP ? `https://wa.me/${WHATSAPP}?text=${encodeURIComponent("أرغب في الحجز: " + o.title)}` : "";
+      const link = o.link || wa;
+      return `<article class="card">
+        <div class="ph" ${o.image ? `style="background-image:url('${esc(o.image)}')"` : ""}></div>
+        <div class="bd"><h3>${esc(o.title)}</h3><div class="dt">${esc(o.details)}</div>
+        ${o.price ? `<div class="price"><b>${esc(o.price)}</b></div>` : ""}
+        <div class="row">${link ? `<a class="btn sm" href="${esc(link)}" target="_blank" rel="noopener">احجز الآن</a>` : ""}
+        ${token ? `<button class="btn sm ghost" style="color:var(--ink);border-color:var(--ink)" data-edit="${esc(o.id)}">تعديل</button><button class="btn sm red" data-del="${esc(o.id)}">حذف</button>` : ""}</div></div>
+      </article>`;
+    }).join("");
+    return `<section id="${s.id}"><div class="sec-head"><h2>${s.name}</h2><a href="${s.site}" target="_blank" rel="noopener">كل العروض في الموقع الكامل</a></div>
+      ${cards ? `<div class="grid">${cards}</div>` : `<div class="empty">لا توجد عروض منشورة هنا حاليًا. تابع الموقع الكامل لمشاهدة آخر العروض.</div>`}</section>`;
+  }).join("");
+  $("loginBtn").style.display = token ? "none" : "";
+  $("adminBar").style.display = token ? "flex" : "none";
+}
+
+/* تسجيل الدخول */
+$("loginBtn").onclick = () => { $("loginMsg").textContent=""; $("loginDlg").showModal(); };
+document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => b.closest("dialog").close());
+$("doLogin").onclick = async () => {
+  $("loginMsg").textContent = "جارٍ التحقق...";
+  try{
+    const d = await api({action:"login", user:$("u").value.trim(), pass:$("p").value});
+    if(d.ok){ token = d.token; sessionStorage.setItem("hamsa_token", token); $("loginDlg").close(); $("p").value=""; render(); }
+    else $("loginMsg").textContent = "اسم المستخدم أو كلمة المرور غير صحيحة.";
+  }catch(e){ $("loginMsg").textContent = "تعذر الاتصال بالسيرفر. راجع رابط Apps Script."; }
+};
+$("logoutBtn").onclick = () => { token=""; sessionStorage.removeItem("hamsa_token"); render(); };
+
+/* إضافة وتعديل */
+$("f_section").innerHTML = SECTIONS.map(s => `<option value="${s.id}">${s.name}</option>`).join("");
+function openOffer(o){
+  editingId = o ? o.id : null;
+  $("offerTitle").textContent = o ? "تعديل العرض" : "عرض جديد";
+  $("f_section").value = o?.section || SECTIONS[0].id;
+  $("f_title").value = o?.title || ""; $("f_price").value = o?.price || "";
+  $("f_details").value = o?.details || ""; $("f_image").value = o?.image || ""; $("f_link").value = o?.link || "";
+  $("offerMsg").textContent = ""; $("offerDlg").showModal();
+}
+$("addBtn").onclick = () => openOffer(null);
+$("saveOffer").onclick = async () => {
+  const offer = {id:editingId, section:$("f_section").value, title:$("f_title").value.trim(), price:$("f_price").value.trim(),
+    details:$("f_details").value.trim(), image:$("f_image").value.trim(), link:$("f_link").value.trim()};
+  if(!offer.title){ $("offerMsg").textContent = "اكتب اسم العرض."; return; }
+  $("offerMsg").textContent = "جارٍ الحفظ...";
+  const d = await api({action:"save", token, offer});
+  if(d.ok){ $("offerDlg").close(); load(); }
+  else { $("offerMsg").textContent = d.error === "auth" ? "انتهت الجلسة، سجّل الدخول مرة أخرى." : "تعذر الحفظ."; if(d.error==="auth") $("logoutBtn").click(); }
+};
+$("sections").addEventListener("click", async e => {
+  const ed = e.target.dataset.edit, del = e.target.dataset.del;
+  if(ed) openOffer(offers.find(o => String(o.id) === ed));
+  if(del && confirm("هل تريد حذف هذا العرض؟")){
+    const d = await api({action:"delete", token, id:del});
+    if(d.ok) load(); else if(d.error==="auth") $("logoutBtn").click();
+  }
+});
+
+render();
+if(API_URL.startsWith("http")) load();
+</script>
+</body>
+</html>
