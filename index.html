@@ -117,7 +117,216 @@ const SECTIONS = [
   {id:"hajj", name:"عروض الحج", site:"https://amrkhaledmohamedeng-create.github.io/alhaju/"}
 ];
 
-let offers = [], editingId = null, mode = "login";
+const SEED = [
+ {
+  "id": "tayser-1",
+  "section": "tayser",
+  "title": "عمرة التيسير 1,000 جنيه شهريًا",
+  "price": "1,000 جنيه / شهريًا",
+  "details": "المدة: 24 شهر • الإجمالي: 24,000 جنيه\nاشتراك شهري بدون مقدم وبدون فوائد وبدون مصاريف إدارية.\nقرعة علنية كل 3 شهور لتحديد أدوار السفر، والسفر بسعر الموسم كاش.\nكل المشتركين يدخلون السحب على عمرة مجانية.",
+  "image": "",
+  "link": "https://hamsatouirsmcompany.github.io/TAYSER/"
+ },
+ {
+  "id": "tayser-2",
+  "section": "tayser",
+  "title": "عمرة التيسير 1,250 جنيه شهريًا",
+  "price": "1,250 جنيه / شهريًا",
+  "details": "المدة: 24 شهر • الإجمالي: 30,000 جنيه\nاشتراك شهري بدون مقدم وبدون فوائد وبدون مصاريف إدارية.\nقرعة علنية كل 3 شهور لتحديد أدوار السفر، والسفر بسعر الموسم كاش.\nكل المشتركين يدخلون السحب على عمرة مجانية.",
+  "image": "",
+  "link": "https://hamsatouirsmcompany.github.io/TAYSER/"
+ },
+ {
+  "id": "tayser-3",
+  "section": "tayser",
+  "title": "عمرة التيسير 1,500 جنيه شهريًا",
+  "price": "1,500 جنيه / شهريًا",
+  "details": "المدة: 24 شهر • الإجمالي: 36,000 جنيه\nاشتراك شهري بدون مقدم وبدون فوائد وبدون مصاريف إدارية.\nقرعة علنية كل 3 شهور لتحديد أدوار السفر، والسفر بسعر الموسم كاش.\nكل المشتركين يدخلون السحب على عمرة مجانية.",
+  "image": "",
+  "link": "https://hamsatouirsmcompany.github.io/TAYSER/"
+ },
+ {
+  "id": "tayser-4",
+  "section": "tayser",
+  "title": "عمرة التيسير 2,000 جنيه شهريًا",
+  "price": "2,000 جنيه / شهريًا",
+  "details": "المدة: 12 شهر • الإجمالي: 24,000 جنيه\nاشتراك شهري بدون مقدم وبدون فوائد وبدون مصاريف إدارية.\nقرعة علنية كل 3 شهور لتحديد أدوار السفر، والسفر بسعر الموسم كاش.\nكل المشتركين يدخلون السحب على عمرة مجانية.",
+  "image": "",
+  "link": "https://hamsatouirsmcompany.github.io/TAYSER/"
+ },
+ {
+  "id": "tayser-5",
+  "section": "tayser",
+  "title": "عمرة التيسير 2,500 جنيه شهريًا",
+  "price": "2,500 جنيه / شهريًا",
+  "details": "المدة: 12 شهر • الإجمالي: 30,000 جنيه\nاشتراك شهري بدون مقدم وبدون فوائد وبدون مصاريف إدارية.\nقرعة علنية كل 3 شهور لتحديد أدوار السفر، والسفر بسعر الموسم كاش.\nكل المشتركين يدخلون السحب على عمرة مجانية.",
+  "image": "",
+  "link": "https://hamsatouirsmcompany.github.io/TAYSER/"
+ },
+ {
+  "id": "tayser-6",
+  "section": "tayser",
+  "title": "عمرة التيسير 3,000 جنيه شهريًا",
+  "price": "3,000 جنيه / شهريًا",
+  "details": "المدة: 12 شهر • الإجمالي: 36,000 جنيه\nاشتراك شهري بدون مقدم وبدون فوائد وبدون مصاريف إدارية.\nقرعة علنية كل 3 شهور لتحديد أدوار السفر، والسفر بسعر الموسم كاش.\nكل المشتركين يدخلون السحب على عمرة مجانية.",
+  "image": "",
+  "link": "https://hamsatouirsmcompany.github.io/TAYSER/"
+ },
+ {
+  "id": "tayser-7",
+  "section": "tayser",
+  "title": "عمرة التيسير الذهبية",
+  "price": "4,000 جنيه / شهريًا",
+  "details": "المدة: 12 شهر • الإجمالي: 48,000 جنيه\nاشتراك شهري بدون مقدم وبدون فوائد وبدون مصاريف إدارية.\nقرعة علنية كل 3 شهور لتحديد أدوار السفر، والسفر بسعر الموسم كاش.\nكل المشتركين يدخلون السحب على عمرة مجانية.",
+  "image": "",
+  "link": "https://hamsatouirsmcompany.github.io/TAYSER/"
+ },
+ {
+  "id": "tayser-8",
+  "section": "tayser",
+  "title": "عمرة التيسير البلاتينية",
+  "price": "5,000 جنيه / شهريًا",
+  "details": "المدة: 12 شهر • الإجمالي: 60,000 جنيه\nاشتراك شهري بدون مقدم وبدون فوائد وبدون مصاريف إدارية.\nقرعة علنية كل 3 شهور لتحديد أدوار السفر، والسفر بسعر الموسم كاش.\nكل المشتركين يدخلون السحب على عمرة مجانية.",
+  "image": "",
+  "link": "https://hamsatouirsmcompany.github.io/TAYSER/"
+ },
+ {
+  "id": "tayser-9",
+  "section": "tayser",
+  "title": "تيسير شعبان ورمضان",
+  "price": "3,500 جنيه / شهريًا",
+  "details": "المدة: 12 شهر • الإجمالي: 42,000 جنيه\nاشتراك شهري بدون مقدم وبدون فوائد وبدون مصاريف إدارية.\nقرعة علنية كل 3 شهور لتحديد أدوار السفر، والسفر بسعر الموسم كاش.\nكل المشتركين يدخلون السحب على عمرة مجانية.",
+  "image": "",
+  "link": "https://hamsatouirsmcompany.github.io/TAYSER/"
+ },
+ {
+  "id": "tayser-10",
+  "section": "tayser",
+  "title": "تثبيت سعر رمضان",
+  "price": "45,000 جنيه",
+  "details": "سعر ثابت بدون تذاكر الطيران.",
+  "image": "",
+  "link": "https://hamsatouirsmcompany.github.io/TAYSER/"
+ },
+ {
+  "id": "tayser-11",
+  "section": "tayser",
+  "title": "تيسير رمضان — 16 شهر",
+  "price": "3,000 جنيه / شهريًا",
+  "details": "المدة: 16 شهر، يبدأ من شهر 6.\nحجز مرن: يمكن الحجز بعد بداية الحجز بدفع الشهور السابقة بأثر رجعي.",
+  "image": "",
+  "link": "https://hamsatouirsmcompany.github.io/TAYSER/"
+ },
+ {
+  "id": "tayser-12",
+  "section": "tayser",
+  "title": "تيسير رمضان — 20 شهر",
+  "price": "2,500 جنيه / شهريًا",
+  "details": "المدة: 20 شهر، يبدأ من شهر 5.\nحجز مرن: يمكن الحجز بعد بداية الحجز بدفع الشهور السابقة بأثر رجعي.",
+  "image": "",
+  "link": "https://hamsatouirsmcompany.github.io/TAYSER/"
+ },
+ {
+  "id": "umrah-1",
+  "section": "umrah",
+  "title": "العمرة بالقسط",
+  "price": "ادفع 50% أو 60%",
+  "details": "اختر البرنامج وادفع 50% أو 60% وقسّط الباقي من 3 إلى 12 شهر بدون تعقيد.",
+  "image": "",
+  "link": "https://amrkhaledmohamedeng-create.github.io/hamsa-torism/"
+ },
+ {
+  "id": "umrah-2",
+  "section": "umrah",
+  "title": "عمرة كاش — ريع بخش (اقتصادي بالمواصلات)",
+  "price": "من 40,500 جنيه (رباعي)",
+  "details": "المدينة: نسك المدينة / درة الإيمان / طيبة هيلز — 3 ليالي\nمكة: قصر العليان / النخبة 1 / أبراج القصواء — 11 ليلة\nرباعي 40,500 • ثلاثي 43,500 • ثنائي 48,900 • سينجل 64,500 • طفل 31,500 • رضيع 17,500",
+  "image": "",
+  "link": "https://amrkhaledmohamedeng-create.github.io/hamsa-torism/"
+ },
+ {
+  "id": "umrah-3",
+  "section": "umrah",
+  "title": "عمرة كاش — اقتصادي مشي (بير بليلة)",
+  "price": "من 42,000 جنيه (رباعي)",
+  "details": "المدينة: نسك المدينة / درة الإيمان / طيبة هيلز — 3 ليالي\nمكة: إعمار أفاق — 11 ليلة\nرباعي 42,000 • ثلاثي 46,500 • ثنائي 52,900 • سينجل 72,900 • طفل 31,500 • رضيع 17,500",
+  "image": "",
+  "link": "https://amrkhaledmohamedeng-create.github.io/hamsa-torism/"
+ },
+ {
+  "id": "umrah-4",
+  "section": "umrah",
+  "title": "عمرة كاش — اقتصادي مشي (أجياد السد)",
+  "price": "من 42,500 جنيه (رباعي)",
+  "details": "المدينة: نسك المدينة / درة الإيمان / طيبة هيلز — 3 ليالي\nمكة: واحة الضيافة / العليان أجياد — 11 ليلة\nرباعي 42,500 • ثلاثي 46,900 • ثنائي 53,500 • سينجل 73,900 • طفل 31,500 • رضيع 17,500",
+  "image": "",
+  "link": "https://amrkhaledmohamedeng-create.github.io/hamsa-torism/"
+ },
+ {
+  "id": "umrah-5",
+  "section": "umrah",
+  "title": "عمرة كاش 5 نجوم (أ)",
+  "price": "من 66,900 جنيه (رباعي)",
+  "details": "3 ليالي المدينة + 4 ليالي مكة بالإفطار\nالطيران: سعودي — القاهرة / المدينة / جدة / القاهرة\nالمدينة: فندق الحرم — مكة: الصفوة البرج الثالث (أول مطل على الحرم)\nرباعي 66,900 • ثلاثي 70,900 • ثنائي 79,900",
+  "image": "",
+  "link": "https://amrkhaledmohamedeng-create.github.io/hamsa-torism/"
+ },
+ {
+  "id": "umrah-6",
+  "section": "umrah",
+  "title": "عمرة كاش 5 نجوم (ب)",
+  "price": "من 55,500 جنيه (رباعي)",
+  "details": "3 ليالي المدينة + 4 ليالي مكة بالإفطار\nالطيران: سعودي — القاهرة / المدينة / جدة / القاهرة\nالمدينة: درة الإيمان — مكة: الشهداء (أول مطل على الحرم)\nرباعي 55,500 • ثلاثي 58,900 • ثنائي 64,500",
+  "image": "",
+  "link": "https://amrkhaledmohamedeng-create.github.io/hamsa-torism/"
+ },
+ {
+  "id": "umrah-7",
+  "section": "umrah",
+  "title": "عمرة كاش — اقتصادي مميز",
+  "price": "من 47,000 جنيه (رباعي)",
+  "details": "4 ليالي المدينة + 5 ليالي مكة\nالطيران: سعودي — القاهرة / المدينة / جدة / القاهرة\nالمدينة: كونكورد دار الخير — مكة: الماسة جراند (400 متر من الحرم)\nرباعي 47,000 • ثلاثي 50,900 • ثنائي 57,900",
+  "image": "",
+  "link": "https://amrkhaledmohamedeng-create.github.io/hamsa-torism/"
+ },
+ {
+  "id": "hajj-1",
+  "section": "hajj",
+  "title": "الحج السياحي",
+  "price": "395,000 – 650,000 جنيه",
+  "details": "عدة مستويات وبرامج بإقامة مختلفة وقرب متفاوت من الحرم.\nخدمات مميزة للحجاج مع إشراف ومتابعة.",
+  "image": "",
+  "link": "https://amrkhaledmohamedeng-create.github.io/alhaju/"
+ },
+ {
+  "id": "hajj-2",
+  "section": "hajj",
+  "title": "الحج الميسر",
+  "price": "",
+  "details": "برنامج حج ميسر بخدمات متكاملة وأسعار وخيارات متعددة. استفسر عن التفاصيل والأسعار.",
+  "image": "",
+  "link": "https://amrkhaledmohamedeng-create.github.io/alhaju/"
+ },
+ {
+  "id": "hajj-3",
+  "section": "hajj",
+  "title": "الحج الميسر بالتقسيط",
+  "price": "تقسيط حتى 120,000 جنيه",
+  "details": "قسّط جزءًا من سعر أي برنامج حج على 24 شهر بواقع 5,000 جنيه شهريًا، وادفع باقي سعر البرنامج مقدمًا.",
+  "image": "",
+  "link": "https://amrkhaledmohamedeng-create.github.io/alhaju/"
+ },
+ {
+  "id": "hajj-4",
+  "section": "hajj",
+  "title": "حج القرعة",
+  "price": "",
+  "details": "سجّل اهتمامك، واختر البرنامج المناسب وسنتواصل معك لاستكمال الإجراءات.",
+  "image": "",
+  "link": "https://amrkhaledmohamedeng-create.github.io/alhaju/"
+ }
+];
+let offers = SEED, editingId = null, mode = "login";
 let session = JSON.parse(sessionStorage.getItem("hamsa_session") || "null");
 const token = () => session ? session.token : "";
 const isAdmin = () => session && session.role === "admin";
@@ -134,7 +343,7 @@ async function load(){
     const r = await fetch(API_URL + "?action=list");
     const d = await r.json();
     offers = d.offers || [];
-  }catch(e){ offers = []; }
+  }catch(e){ offers = SEED; }
   render();
 }
 
