@@ -54,15 +54,15 @@ input,select,textarea{width:100%;font:inherit;padding:9px 11px;border:1.5px soli
 <body>
 
 <div class="admin-bar" id="adminBar">
-  <span>وضع المدير: تقدر تضيف وتعدل وتحذف العروض</span>
-  <span class="row"><button class="btn sm" style="background:var(--ink);color:#fff" id="addBtn">إضافة عرض</button><button class="btn sm" style="background:#fff" id="logoutBtn">تسجيل خروج</button></span>
+  <span>وضع المدير: تقدر تضيف وتعدل وتحذف العروض وتشوف طلبات الاشتراك</span>
+  <span class="row"><button class="btn sm" style="background:var(--ink);color:#fff" id="addBtn">إضافة عرض</button><button class="btn sm" style="background:var(--ink);color:#fff" id="subsBtn">طلبات الاشتراك</button></span>
 </div>
 
 <header>
   <div class="bar">
     <img src="logo.png" alt="همسة للسياحة">
     <nav id="nav"></nav>
-    <button class="btn ghost" id="loginBtn">تسجيل دخول</button>
+    <div class="row" style="align-items:center;margin:0"><span id="who" style="color:var(--sky)"></span><button class="btn ghost" id="loginBtn">تسجيل دخول</button><button class="btn ghost sm" id="logoutBtn" style="display:none">خروج</button></div>
   </div>
 </header>
 
@@ -77,11 +77,22 @@ input,select,textarea{width:100%;font:inherit;padding:9px 11px;border:1.5px soli
 <footer>© همسة للسياحة — جميع الحقوق محفوظة</footer>
 
 <dialog id="loginDlg">
-  <h3>دخول المدير</h3>
-  <label for="u">اسم المستخدم</label><input id="u" autocomplete="username">
-  <label for="p">كلمة المرور</label><input id="p" type="password" autocomplete="current-password">
+  <h3 id="authTitle">تسجيل الدخول</h3>
+  <div id="regOnly" style="display:none">
+    <label for="r_name">الاسم</label><input id="r_name" autocomplete="name">
+    <label for="r_phone">رقم الموبايل</label><input id="r_phone" type="tel" dir="ltr" autocomplete="tel">
+  </div>
+  <label for="u">البريد الإلكتروني</label><input id="u" type="email" dir="ltr" autocomplete="email">
+  <label for="p">كلمة المرور</label><input id="p" type="password" autocomplete="current-password" placeholder="6 أحرف على الأقل">
   <div class="msg" id="loginMsg"></div>
-  <div class="row"><button class="btn" id="doLogin">دخول</button><button class="btn ghost" style="color:var(--ink);border-color:var(--ink)" data-close>إلغاء</button></div>
+  <div class="row"><button class="btn" id="doAuth">دخول</button><button class="btn ghost" style="color:var(--ink);border-color:var(--ink)" data-close>إلغاء</button></div>
+  <p style="margin:14px 0 0"><a href="#" id="switchMode">ليس لديك حساب؟ أنشئ حساب جديد</a></p>
+</dialog>
+
+<dialog id="subsDlg" style="width:min(720px,94vw)">
+  <h3>طلبات الاشتراك</h3>
+  <div style="overflow-x:auto"><table id="subsTable" style="width:100%;border-collapse:collapse;font-size:.95rem"></table></div>
+  <div class="row"><button class="btn ghost" style="color:var(--ink);border-color:var(--ink)" data-close>إغلاق</button></div>
 </dialog>
 
 <dialog id="offerDlg">
@@ -99,7 +110,6 @@ input,select,textarea{width:100%;font:inherit;padding:9px 11px;border:1.5px soli
 <script>
 /* ===== الإعدادات: غيّر الرابط بعد نشر Apps Script ===== */
 const API_URL = "https://script.google.com/macros/s/AKfycbxRr2PYw2kkY9TiAGVT0MfswIBsxYPtrVuRBvXjzrOTVdr7ueGHOSLjHkUEZkshPmEOFg/exec";
-const WHATSAPP = ""; // رقم واتساب بالصيغة الدولية بدون +، مثال 201001234567
 
 const SECTIONS = [
   {id:"umrah", name:"عروض العمرة", site:"https://amrkhaledmohamedeng-create.github.io/hamsa-torism/"},
@@ -107,7 +117,10 @@ const SECTIONS = [
   {id:"hajj", name:"عروض الحج", site:"https://amrkhaledmohamedeng-create.github.io/alhaju/"}
 ];
 
-let offers = [], token = sessionStorage.getItem("hamsa_token") || "", editingId = null;
+let offers = [], editingId = null, mode = "login";
+let session = JSON.parse(sessionStorage.getItem("hamsa_session") || "null");
+const token = () => session ? session.token : "";
+const isAdmin = () => session && session.role === "admin";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
@@ -130,35 +143,77 @@ function render(){
   $("sections").innerHTML = SECTIONS.map(s => {
     const list = offers.filter(o => o.section === s.id);
     const cards = list.map(o => {
-      const wa = WHATSAPP ? `https://wa.me/${WHATSAPP}?text=${encodeURIComponent("أرغب في الحجز: " + o.title)}` : "";
-      const link = o.link || wa;
+      
       return `<article class="card">
         <div class="ph" ${o.image ? `style="background-image:url('${esc(o.image)}')"` : ""}></div>
         <div class="bd"><h3>${esc(o.title)}</h3><div class="dt">${esc(o.details)}</div>
         ${o.price ? `<div class="price"><b>${esc(o.price)}</b></div>` : ""}
-        <div class="row">${link ? `<a class="btn sm" href="${esc(link)}" target="_blank" rel="noopener">احجز الآن</a>` : ""}
-        ${token ? `<button class="btn sm ghost" style="color:var(--ink);border-color:var(--ink)" data-edit="${esc(o.id)}">تعديل</button><button class="btn sm red" data-del="${esc(o.id)}">حذف</button>` : ""}</div></div>
+        <div class="row"><button class="btn sm" data-sub="${esc(o.id)}">اشترك في العرض</button>
+        ${o.link ? `<a class="btn sm ghost" style="color:var(--ink);border-color:var(--ink)" href="${esc(o.link)}" target="_blank" rel="noopener">تفاصيل أكثر</a>` : ""}
+        ${isAdmin() ? `<button class="btn sm ghost" style="color:var(--ink);border-color:var(--ink)" data-edit="${esc(o.id)}">تعديل</button><button class="btn sm red" data-del="${esc(o.id)}">حذف</button>` : ""}</div></div>
       </article>`;
     }).join("");
     return `<section id="${s.id}"><div class="sec-head"><h2>${s.name}</h2><a href="${s.site}" target="_blank" rel="noopener">كل العروض في الموقع الكامل</a></div>
       ${cards ? `<div class="grid">${cards}</div>` : `<div class="empty">لا توجد عروض منشورة هنا حاليًا. تابع الموقع الكامل لمشاهدة آخر العروض.</div>`}</section>`;
   }).join("");
-  $("loginBtn").style.display = token ? "none" : "";
-  $("adminBar").style.display = token ? "flex" : "none";
+  $("loginBtn").style.display = session ? "none" : "";
+  $("logoutBtn").style.display = session ? "" : "none";
+  $("who").textContent = session ? "أهلًا، " + session.name : "";
+  $("adminBar").style.display = isAdmin() ? "flex" : "none";
 }
 
-/* تسجيل الدخول */
-$("loginBtn").onclick = () => { $("loginMsg").textContent=""; $("loginDlg").showModal(); };
+/* تسجيل الدخول والتسجيل */
+function setMode(m){
+  mode = m;
+  $("authTitle").textContent = m === "login" ? "تسجيل الدخول" : "إنشاء حساب جديد";
+  $("regOnly").style.display = m === "login" ? "none" : "block";
+  $("doAuth").textContent = m === "login" ? "دخول" : "إنشاء الحساب";
+  $("switchMode").textContent = m === "login" ? "ليس لديك حساب؟ أنشئ حساب جديد" : "لديك حساب؟ سجّل الدخول";
+  $("loginMsg").textContent = "";
+}
+function openAuth(m){ setMode(m || "login"); $("loginDlg").showModal(); }
+$("loginBtn").onclick = () => openAuth("login");
+$("switchMode").onclick = e => { e.preventDefault(); setMode(mode === "login" ? "register" : "login"); };
 document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => b.closest("dialog").close());
-$("doLogin").onclick = async () => {
+const AUTH_ERR = {credentials:"البريد أو كلمة المرور غير صحيحة.", exists:"هذا البريد مسجل بالفعل. سجّل الدخول.", invalid:"راجع البيانات: اسم، بريد صحيح، وكلمة مرور 6 أحرف على الأقل."};
+$("doAuth").onclick = async () => {
   $("loginMsg").textContent = "جارٍ التحقق...";
   try{
-    const d = await api({action:"login", user:$("u").value.trim(), pass:$("p").value});
-    if(d.ok){ token = d.token; sessionStorage.setItem("hamsa_token", token); $("loginDlg").close(); $("p").value=""; render(); }
-    else $("loginMsg").textContent = "اسم المستخدم أو كلمة المرور غير صحيحة.";
+    const body = {action:mode, email:$("u").value.trim(), pass:$("p").value};
+    if(mode === "register"){ body.name = $("r_name").value.trim(); body.phone = $("r_phone").value.trim(); }
+    const d = await api(body);
+    if(d.ok){
+      session = {token:d.token, role:d.role, name:d.name};
+      sessionStorage.setItem("hamsa_session", JSON.stringify(session));
+      $("loginDlg").close(); $("p").value = ""; render();
+      if(pendingSub){ const id = pendingSub; pendingSub = null; subscribe(id); }
+    } else $("loginMsg").textContent = AUTH_ERR[d.error] || "تعذر تنفيذ الطلب.";
   }catch(e){ $("loginMsg").textContent = "تعذر الاتصال بالسيرفر. راجع رابط Apps Script."; }
 };
-$("logoutBtn").onclick = () => { token=""; sessionStorage.removeItem("hamsa_token"); render(); };
+function logout(){ session = null; sessionStorage.removeItem("hamsa_session"); render(); }
+$("logoutBtn").onclick = logout;
+
+/* الاشتراك في عرض */
+let pendingSub = null;
+async function subscribe(id){
+  const o = offers.find(x => String(x.id) === String(id));
+  if(!confirm("تأكيد الاشتراك في: " + (o ? o.title : "") + "؟ سيتواصل معك فريق همسة.")) return;
+  const d = await api({action:"subscribe", token:token(), offerId:id});
+  if(d.ok) alert("تم استلام طلبك. سنتواصل معك قريبًا.");
+  else if(d.error === "auth"){ logout(); pendingSub = id; openAuth("login"); }
+  else alert("تعذر إرسال الطلب، حاول مرة أخرى.");
+}
+
+/* طلبات الاشتراك للمدير */
+$("subsBtn").onclick = async () => {
+  const d = await api({action:"subs", token:token()});
+  if(!d.ok){ if(d.error === "auth") logout(); return; }
+  const th = "padding:8px;border-bottom:1px solid #ddd;text-align:right";
+  $("subsTable").innerHTML = `<tr>${["التاريخ","العرض","الاسم","الموبايل","البريد"].map(h => `<th style="${th}">${h}</th>`).join("")}</tr>` +
+    (d.subs.length ? d.subs.map(r => `<tr>${[new Date(r.time).toLocaleString("ar-EG"), r.offerTitle, r.name, r.phone, r.email].map(v => `<td style="${th}">${esc(v)}</td>`).join("")}</tr>`).join("")
+      : `<tr><td style="${th}" colspan="5">لا توجد طلبات بعد.</td></tr>`);
+  $("subsDlg").showModal();
+};
 
 /* إضافة وتعديل */
 $("f_section").innerHTML = SECTIONS.map(s => `<option value="${s.id}">${s.name}</option>`).join("");
@@ -176,16 +231,17 @@ $("saveOffer").onclick = async () => {
     details:$("f_details").value.trim(), image:$("f_image").value.trim(), link:$("f_link").value.trim()};
   if(!offer.title){ $("offerMsg").textContent = "اكتب اسم العرض."; return; }
   $("offerMsg").textContent = "جارٍ الحفظ...";
-  const d = await api({action:"save", token, offer});
+  const d = await api({action:"save", token:token(), offer});
   if(d.ok){ $("offerDlg").close(); load(); }
-  else { $("offerMsg").textContent = d.error === "auth" ? "انتهت الجلسة، سجّل الدخول مرة أخرى." : "تعذر الحفظ."; if(d.error==="auth") $("logoutBtn").click(); }
+  else { $("offerMsg").textContent = d.error === "auth" ? "انتهت الجلسة، سجّل الدخول مرة أخرى." : "تعذر الحفظ."; if(d.error==="auth") logout(); }
 };
 $("sections").addEventListener("click", async e => {
-  const ed = e.target.dataset.edit, del = e.target.dataset.del;
+  const ed = e.target.dataset.edit, del = e.target.dataset.del, sub = e.target.dataset.sub;
+  if(sub){ if(session) subscribe(sub); else { pendingSub = sub; openAuth("login"); } return; }
   if(ed) openOffer(offers.find(o => String(o.id) === ed));
   if(del && confirm("هل تريد حذف هذا العرض؟")){
-    const d = await api({action:"delete", token, id:del});
-    if(d.ok) load(); else if(d.error==="auth") $("logoutBtn").click();
+    const d = await api({action:"delete", token:token(), id:del});
+    if(d.ok) load(); else if(d.error==="auth") logout();
   }
 });
 
