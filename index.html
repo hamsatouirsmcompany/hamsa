@@ -38,6 +38,18 @@ table{width:100%;border-collapse:collapse;background:var(--card);font-size:.9rem
 .tw{overflow-x:auto}.empty{color:var(--mute);padding:24px;text-align:center}
 footer{padding:32px 5vw;text-align:center;color:var(--mute);font-size:.9rem}
 .wa{position:fixed;bottom:16px;inset-inline-start:16px;background:#1f9d55;border-color:#1f9d55;border-radius:50px;z-index:4}
+
+.fc{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 4px 16px #0b2f4714}
+.fh{position:relative;height:150px;background:#0b2f47}.fh img{width:100%;height:100%;object-fit:cover;opacity:.85}
+.bd{position:absolute;inset-inline-start:12px;bottom:-14px;background:var(--hd);color:var(--y);border:2px solid var(--y);border-radius:50px;padding:2px 16px;font-weight:700}
+.fb{padding:24px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}.fb h3{margin:0;font-size:1.1rem;color:var(--g)}
+.fb ul{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:.92rem}.fb li{border-bottom:1px dashed var(--line);padding-bottom:4px}
+.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--hd);padding:8px;border-radius:12px;border-bottom:3px solid var(--y)}
+.pg i{font-style:normal;display:grid;text-align:center;color:#fff;font-size:.78rem;line-height:1.3;background:#ffffff14;border-radius:8px;padding:6px 2px}.pg b{color:var(--y);font-size:1.05rem}
+.fb .row{margin-top:auto;display:flex;gap:8px}.fb .row .bk{flex:1;background:var(--y);border-color:var(--y);color:#0b2f47;font-weight:700}
+.ty{background:linear-gradient(135deg,#dff0fb,#fff8d6);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px;color:#0f2433}.ty h3{margin:0 0 4px;font-size:1.3rem}
+.ty .st{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:10px 0}.ty .st span{background:#fff;border-radius:10px;padding:8px 12px;border:1px solid #14587f33}
+.ty .ex{background:#fac80f33;border-radius:10px;padding:8px 12px;font-size:.92rem}
 </style>
 </head>
 <body>
@@ -50,7 +62,7 @@ footer{padding:32px 5vw;text-align:center;color:var(--mute);font-size:.9rem}
 <input id="maxp" type="number" min="0" placeholder="أقصى سعر (ج.م)" aria-label="أقصى سعر">
 <select id="stars" aria-label="النجوم"><option value="">كل التصنيفات</option><option>5</option><option>4</option><option>3</option></select>
 <select id="city" aria-label="المدينة"><option value="">مكة والمدينة</option><option>مكة</option><option>المدينة</option></select></div>
-<div class="grid" id="list"><p class="empty">جاري تحميل العروض...</p></div></section>
+<div id="info"></div><div class="grid" id="list"><p class="empty">جاري تحميل العروض...</p></div></section>
 
 <section id="gallery"><h2>من رحلات الحج والعمرة</h2><div class="gal"><img loading="lazy" alt="" src="images/kaaba-aerial.webp"><img loading="lazy" alt="" src="images/nabawi-minarets.webp"><img loading="lazy" alt="" src="images/haram-crowd.webp"><img loading="lazy" alt="" src="images/madinah-sunset.webp"><img loading="lazy" alt="" src="images/kaaba-sky.webp"><img loading="lazy" alt="" src="images/nabawi-towers.webp"><img loading="lazy" alt="" src="images/hajar-aswad.webp"><img loading="lazy" alt="" src="images/madinah-lamp.webp"></div></section>
 <section id="contact"><h2>سجّل اهتمامك وهنكلمك</h2>
@@ -75,6 +87,16 @@ footer{padding:32px 5vw;text-align:center;color:var(--mute);font-size:.9rem}
 <a class="btn wa" id="wa" target="_blank" rel="noopener">واتساب</a>
 
 <dialog id="dlg"><form method="dialog" id="dform" style="display:grid;gap:10px"></form></dialog>
+<dialog id="bdlg"><form id="bform" style="display:grid;gap:10px"><h2 id="bt">احجز العرض</h2>
+<label>الاسم بالكامل *<input name="name" required maxlength="100" autocomplete="name"></label>
+<label>رقم الموبايل *<input name="phone" type="tel" required inputmode="tel" autocomplete="tel"></label>
+<label>المحافظة<input name="governorate"></label>
+<label>نوع الحجز<select name="room" id="broom"></select></label>
+<label>عدد الأفراد<input name="n" type="number" min="1" value="1"></label>
+<label>طريقة الدفع<select name="payment"><option>كاش</option><option>تقسيط</option><option>لم أحدد بعد</option></select></label>
+<label>ملاحظات<textarea name="notes" rows="2" maxlength="200"></textarea></label>
+<input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+<div id="bmsg" class="msg" hidden></div><div><button id="bgo">تأكيد الحجز</button> <button type="button" class="o" onclick="bdlg.close()">إلغاء</button></div></form></dialog>
 <dialog id="ldlg"><form id="lform" style="display:grid;gap:10px"><h2 id="ltitle">تسجيل الدخول</h2>
 <label id="lname" hidden>الاسم<input name="name" autocomplete="name"></label>
 <label><span id="luser">اسم المستخدم أو الإيميل</span><input name="u" required autocomplete="username"></label>
@@ -84,7 +106,7 @@ footer{padding:32px 5vw;text-align:center;color:var(--mute);font-size:.9rem}
 
 <script>
 // ضع هنا رابط الـ Web app بعد ما تنشره من Apps Script
-const API = 'https://script.google.com/macros/s/AKfycbxRr2PYw2kkY9TiAGVT0MfswIBsxYPtrVuRBvXjzrOTVdr7ueGHOSLjHkUEZkshPmEOFg/exec';
+const API = 'ضع_رابط_APPS_SCRIPT_هنا';
 const WA = '201096177756';
 const CATS = { cash: 'عمرة الكاش', tayseer: 'عمرة التيسير', hajj: 'الحج' };
 const $ = s => document.querySelector(s);
@@ -109,20 +131,24 @@ async function load() {
   $('#svc').innerHTML = '<option value="">اختر العرض</option>' + offers.map(o => `<option>${esc(o.title)}</option>`).join('');
   render();
 }
-const card = o => `<article class="card"><img loading="lazy" alt="" src="${esc(pic(o))}"><div>
-<h3>${esc(o.title)}</h3><div class="price">${esc(o.price)}</div>
-<div class="meta">${[o.hotel, o.stars ? '★'.repeat(o.stars) : '', o.airline, o.duration].filter(Boolean).map(esc).join(' · ')}</div>
-<div class="det">${esc(o.details)}</div>
-<div class="row"><button class="o" data-fav="${esc(o.id)}" aria-label="المفضلة" aria-pressed="${favs.has(o.id)}">${favs.has(o.id) ? '♥' : '♡'}</button><button data-ask="${esc(o.title)}">اطلب هذا العرض</button><a class="btn o" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent('استفسار عن: ' + o.title)}">واتساب</a></div></div></article>`;
+const ROOM = /^(الرباعي|رباعي|الثلاثي|ثلاثي|الثنائي|ثنائي|السينجل|سينجل|الطفل|طفل|الرضيع|رضيع)\s*[:：]\s*([\d,]+)/;
+function parse(o) { const pr = [], rest = []; String(o.details || '').split('\n').forEach(l => { l = l.trim(); const m = l.match(ROOM); if (m) pr.push([m[1].replace(/^ال/, ''), m[2]]); else if (l) rest.push(l); }); return { pr, rest }; }
+const card = o => { const { pr, rest } = parse(o); return `<article class="fc"><div class="fh"><img loading="lazy" alt="" src="${esc(pic(o))}">${o.duration ? `<span class="bd">${esc(o.duration)}</span>` : ''}</div><div class="fb">
+<h3>${esc(o.title)}</h3><div class="meta">${[o.hotel, o.stars ? '★'.repeat(o.stars) : '', o.airline].filter(Boolean).map(esc).join(' · ')}</div>
+<ul>${rest.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
+${pr.length ? `<div class="pg">${pr.map(x => `<i>${esc(x[0])}<b>${esc(x[1])}</b>جنيه</i>`).join('')}</div>` : `<div class="price">${esc(o.price)}</div>`}
+<div class="row"><button class="bk" data-book="${esc(o.id)}">احجز الآن</button><button class="o" data-fav="${esc(o.id)}" aria-label="المفضلة" aria-pressed="${favs.has(o.id)}">${favs.has(o.id) ? '♥' : '♡'}</button><a class="btn o" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent('استفسار عن: ' + o.title)}">واتساب</a></div></div></article>`; };
+const TY = '<div class="ty"><h3>عمرة التيسير: بتطلع عمرة بنفس سعر الكاش</h3><div>من غير مقدم ولا فوايد ولا مصاريف إدارية. قسط لمدة 24 شهر يبدأ من 1000 / 1250 / 1500 جنيه، أو لمدة 12 شهر يبدأ من 2000 / 2500 / 3000 جنيه.</div><div class="st"><span>🎁 قرعة كل 3 شهور: 8 قرعات خلال 24 شهر و4 خلال 12 شهر</span><span>1️⃣ تختار الوقت اللي يناسبك</span><span>2️⃣ وتختار البرنامج</span><span>3️⃣ وتدفع الفرق بين أقساطك وسعر البرنامج</span></div><div class="ex">مثال: قسط 1500 × 24 شهر = 36,000 جنيه. لو البرنامج 40,000 تدفع الفرق 4,000 جنيه كاش وتسافر.</div></div>';
 function render() {
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.c === cat));
   const q = $('#q').value.trim(), mp = +$('#maxp').value, st = $('#stars').value, ct = $('#city').value;
   const l = offers.filter(o => o.category === cat && (!q || JSON.stringify(o).includes(q)) && (!mp || !o.priceFrom || o.priceFrom <= mp) && (!st || String(o.stars) === st) && (!ct || String(o.city).includes(ct)));
+  $('#info').innerHTML = cat === 'tayseer' ? TY : '';
   $('#list').innerHTML = l.length ? l.map(card).join('') : '<p class="empty">مفيش عروض بالشكل ده دلوقتي. جرّب تغيّر الفلاتر أو كلّمنا على واتساب.</p>';
 }
 $('#tabs').onclick = e => { if (e.target.dataset.c) { cat = e.target.dataset.c; render(); } };
 ['#q', '#maxp', '#stars', '#city'].forEach(s => $(s).oninput = render);
-$('#list').onclick = e => { const f = e.target.dataset.fav; if (f) return toggleFav(f); const t = e.target.dataset.ask; if (t) { $('#svc').value = t; $('#contact').scrollIntoView(); $('[name=name]').focus(); } };
+$('#list').onclick = e => { const bk = e.target.dataset.book; if (bk) return openBook(bk); const f = e.target.dataset.fav; if (f) return toggleFav(f); const t = e.target.dataset.ask; if (t) { $('#svc').value = t; $('#contact').scrollIntoView(); $('[name=name]').focus(); } };
 
 $('#lead').onsubmit = async e => {
   e.preventDefault(); const m = $('#leadMsg');
@@ -190,6 +216,16 @@ window.editOffer = i => {
 window.setSt = async (id, status) => { try { await api('setStatus', { id, status }); aTab('offers'); load(); } catch (x) { alert(x.message); } };
 window.addU = async e => { e.preventDefault(); try { await api('addUser', Object.fromEntries(new FormData(e.target))); aTab('users'); } catch (x) { alert(x.message); } };
 window.actU = async (username, active) => { try { await api('setActive', { username, active }); aTab('users'); } catch (x) { alert(x.message); } };
+let bo = null;
+function openBook(id) { bo = offers.find(o => o.id === id); if (!bo) return; $('#bt').textContent = 'احجز: ' + bo.title; const pr = parse(bo).pr; $('#broom').innerHTML = (pr.length ? pr.map(x => `<option value="${esc(x[0])}">${esc(x[0])} — ${esc(x[1])} جنيه</option>`).join('') : '<option value="">حسب العرض</option>'); $('#bmsg').hidden = true; bdlg.showModal(); }
+$('#bform').onsubmit = async e => {
+  e.preventDefault(); const f = Object.fromEntries(new FormData(e.target)), m = $('#bmsg'), g = $('#bgo'); g.disabled = true;
+  try { await api('lead', { name: f.name, phone: f.phone, governorate: f.governorate, service: bo.title, people: (f.room ? f.room + ' × ' : '') + f.n, payment: f.payment, notes: f.notes, website: f.website });
+    m.hidden = false; m.className = 'msg ok'; m.textContent = 'وصل حجزك، هنكلمك قريب بإذن الله.'; e.target.reset(); setTimeout(() => bdlg.close(), 2500); }
+  catch (x) { m.hidden = false; m.className = 'msg er'; m.textContent = x.message; }
+  g.disabled = false;
+};
+
 window.api = api;
 ui(); load().then(loadFavs); if (me && me.role !== 'visitor' && location.hash === '#admin') showAdmin(true);
 </script>
