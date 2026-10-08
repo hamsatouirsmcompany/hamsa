@@ -50,6 +50,8 @@ footer{padding:32px 5vw;text-align:center;color:var(--mute);font-size:.9rem}
 .ty{background:linear-gradient(135deg,#dff0fb,#fff8d6);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px;color:#0f2433}.ty h3{margin:0 0 4px;font-size:1.3rem}
 .ty .st{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:10px 0}.ty .st span{background:#fff;border-radius:10px;padding:8px 12px;border:1px solid #14587f33}
 .ty .ex{background:#fac80f33;border-radius:10px;padding:8px 12px;font-size:.92rem}
+.fh.im{height:auto;background:#fff}.fh.im img{height:auto;opacity:1;cursor:zoom-in;display:block}.fh.im .bd{display:none}
+#idlg{padding:0;width:min(720px,96vw)}#idlg img{width:100%;display:block}#idlg button{position:absolute;top:8px;inset-inline-start:8px}
 </style>
 </head>
 <body>
@@ -97,6 +99,7 @@ footer{padding:32px 5vw;text-align:center;color:var(--mute);font-size:.9rem}
 <label>ملاحظات<textarea name="notes" rows="2" maxlength="200"></textarea></label>
 <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
 <div id="bmsg" class="msg" hidden></div><div><button id="bgo">تأكيد الحجز</button> <button type="button" class="o" onclick="bdlg.close()">إلغاء</button></div></form></dialog>
+<dialog id="idlg"><button onclick="idlg.close()">إغلاق ✕</button><img alt=""></dialog>
 <dialog id="ldlg"><form id="lform" style="display:grid;gap:10px"><h2 id="ltitle">تسجيل الدخول</h2>
 <label id="lname" hidden>الاسم<input name="name" autocomplete="name"></label>
 <label><span id="luser">اسم المستخدم أو الإيميل</span><input name="u" required autocomplete="username"></label>
@@ -106,7 +109,7 @@ footer{padding:32px 5vw;text-align:center;color:var(--mute);font-size:.9rem}
 
 <script>
 // ضع هنا رابط الـ Web app بعد ما تنشره من Apps Script
-const API = 'https://script.google.com/macros/s/AKfycbxRr2PYw2kkY9TiAGVT0MfswIBsxYPtrVuRBvXjzrOTVdr7ueGHOSLjHkUEZkshPmEOFg/exec';
+const API = 'ضع_رابط_APPS_SCRIPT_هنا';
 const WA = '201096177756';
 const CATS = { cash: 'عمرة الكاش', tayseer: 'عمرة التيسير', hajj: 'الحج' };
 const $ = s => document.querySelector(s);
@@ -133,7 +136,7 @@ async function load() {
 }
 const ROOM = /^(الرباعي|رباعي|الثلاثي|ثلاثي|الثنائي|ثنائي|السينجل|سينجل|الطفل|طفل|الرضيع|رضيع)\s*[:：]\s*([\d,]+)/;
 function parse(o) { const pr = [], rest = []; String(o.details || '').split('\n').forEach(l => { l = l.trim(); const m = l.match(ROOM); if (m) pr.push([m[1].replace(/^ال/, ''), m[2]]); else if (l) rest.push(l); }); return { pr, rest }; }
-const card = o => { const { pr, rest } = parse(o); return `<article class="fc"><div class="fh"><img loading="lazy" alt="" src="${esc(pic(o))}">${o.duration ? `<span class="bd">${esc(o.duration)}</span>` : ''}</div><div class="fb">
+const card = o => { const { pr, rest } = parse(o); return `<article class="fc"><div class="fh${safeImg(o.image) ? ' im' : ''}"><img loading="lazy" alt="${esc(o.title)}" data-zoom="1" src="${esc(pic(o))}">${o.duration ? `<span class="bd">${esc(o.duration)}</span>` : ''}</div><div class="fb">
 <h3>${esc(o.title)}</h3><div class="meta">${[o.hotel, o.stars ? '★'.repeat(o.stars) : '', o.airline].filter(Boolean).map(esc).join(' · ')}</div>
 <ul>${rest.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
 ${pr.length ? `<div class="pg">${pr.map(x => `<i>${esc(x[0])}<b>${esc(x[1])}</b>جنيه</i>`).join('')}</div>` : `<div class="price">${esc(o.price)}</div>`}
@@ -148,7 +151,7 @@ function render() {
 }
 $('#tabs').onclick = e => { if (e.target.dataset.c) { cat = e.target.dataset.c; render(); } };
 ['#q', '#maxp', '#stars', '#city'].forEach(s => $(s).oninput = render);
-$('#list').onclick = e => { const bk = e.target.dataset.book; if (bk) return openBook(bk); const f = e.target.dataset.fav; if (f) return toggleFav(f); const t = e.target.dataset.ask; if (t) { $('#svc').value = t; $('#contact').scrollIntoView(); $('[name=name]').focus(); } };
+$('#list').onclick = e => { if (e.target.dataset.zoom && e.target.closest('.im')) { $('#idlg img').src = e.target.src; return idlg.showModal(); } const bk = e.target.dataset.book; if (bk) return openBook(bk); const f = e.target.dataset.fav; if (f) return toggleFav(f); const t = e.target.dataset.ask; if (t) { $('#svc').value = t; $('#contact').scrollIntoView(); $('[name=name]').focus(); } };
 
 $('#lead').onsubmit = async e => {
   e.preventDefault(); const m = $('#leadMsg');

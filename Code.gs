@@ -9,9 +9,10 @@ const NOTIFY_EMAIL = ''; // اختياري: إيميل يوصله تنبيه ع�
 
 const COLS = {
   Offers: ['id','title','category','priceFrom','price','details','hotel','stars','city','airline','duration','image','status','updatedBy','updatedAt'],
-  Leads: ['id','time','name','phone','governorate','service','people','travelDate','payment','notes','status'],
+  Leads: ['id','time','name','phone','governorate','service','people','travelDate','payment','notes','status','account'],
   Users: ['username','name','role','salt','hash','active'],
-  Log: ['time','user','action','offerId','data']
+  Log: ['time','user','action','offerId','data'],
+  Favs: ['username','ids']
 };
 
 function setup() {
@@ -19,9 +20,16 @@ function setup() {
   Object.keys(COLS).forEach(n => {
     let s = ss.getSheetByName(n) || ss.insertSheet(n);
     if (s.getLastRow() === 0) s.appendRow(COLS[n]);
+    else { const h = s.getRange(1, 1, 1, s.getLastColumn()).getValues()[0]; COLS[n].filter(c => !h.includes(c)).forEach((c, i) => s.getRange(1, h.length + i + 1).setValue(c)); } // يضيف أي عمود جديد
   });
   if (!rows('Users').length) addUserRow(OWNER_USER, OWNER_NAME, 'owner', OWNER_PASS);
   if (!rows('Offers').length) seed();
+}
+
+// لو نسيت كلمة سر المدير أو غيّرت OWNER_PASS بعد setup(): غيّرها فوق ثم شغّل الدالة دي مرة واحدة
+function resetOwnerPassword() {
+  addUserRow(OWNER_USER, OWNER_NAME, 'owner', OWNER_PASS);
+  CacheService.getScriptCache().remove('f_' + OWNER_USER); // يفك قفل المحاولات الغلط
 }
 
 // ---------- أدوات ----------
@@ -44,18 +52,19 @@ function addUserRow(username, name, role, pass) {
 const out = o => ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
 
 // ---------- الدخول ----------
-function auth(token, ownerOnly) {
+function auth(token, ownerOnly, anyRole) {
   const u = token && CacheService.getScriptCache().get('s_' + token);
   if (!u) throw new Error('سجّل الدخول من جديد');
   const user = rows('Users').find(x => x.username === u && x.active === true);
   if (!user) throw new Error('الحساب موقوف');
+  if (!anyRole && user.role === 'visitor') throw new Error('غير مسموح');
   if (ownerOnly && user.role !== 'owner') throw new Error('الصلاحية للمدير الرئيسي فقط');
   return user;
 }
 function login(u, p) {
-  const c = CacheService.getScriptCache(), k = 'f_' + u;
+  u = String(u || '').trim(); const c = CacheService.getScriptCache(), k = 'f_' + u.toLowerCase();
   if (Number(c.get(k) || 0) >= 5) throw new Error('محاولات كتير. جرّب بعد 10 دقايق');
-  const user = rows('Users').find(x => x.username === u && x.active === true);
+  const user = rows('Users').find(x => String(x.username).toLowerCase() === u.toLowerCase() && x.active === true);
   if (!user || user.hash !== hash(p, user.salt)) { c.put(k, String(Number(c.get(k) || 0) + 1), 600); throw new Error('بيانات الدخول غلط'); }
   const token = Utilities.getUuid() + Utilities.getUuid();
   c.put('s_' + token, u, 21600);
@@ -73,12 +82,31 @@ function doPost(e) {
     const d = JSON.parse(e.postData.contents);
     switch (d.action) {
       case 'login': return out(login(d.u, d.p));
+      case 'register': {
+        const c = CacheService.getScriptCache(), n = Number(c.get('reg') || 0);
+        if (n >= 30) throw new Error('حاول مرة تانية بعد شوية');
+        const email = String(d.email || '').trim().toLowerCase(), name = String(d.name || '').trim().slice(0, 60);
+        if (name.length < 2) throw new Error('اكتب اسمك');
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 80) throw new Error('اكتب إيميل صحيح');
+        if (String(d.password || '').length < 8) throw new Error('كلمة السر 8 حروف أو أكتر');
+        if (rows('Users').some(x => String(x.username).toLowerCase() === email)) throw new Error('الإيميل ده مسجّل قبل كده. سجّل دخول');
+        c.put('reg', String(n + 1), 3600);
+        addUserRow(email, name, 'visitor', d.password); return out({ ok: true });
+      }
+      case 'favs': case 'toggleFav': {
+        const u = auth(d.token, false, true), r0 = rows('Favs').find(x => x.username === u.username);
+        const set = new Set(r0 && r0.ids ? String(r0.ids).split(',') : []);
+        if (d.action === 'toggleFav') { const id = String(d.id || '').replace(/[^\w-]/g, '').slice(0, 40); if (id) { set.has(id) ? set.delete(id) : set.add(id); } upsert('Favs', 'username', { username: u.username, ids: [...set].slice(0, 100).join(',') }); }
+        return out({ ids: [...set] });
+      }
+      case 'myLeads': { const u = auth(d.token, false, true); return out({ leads: rows('Leads').filter(x => x.account === u.username).map(x => ({ time: x.time, service: x.service, status: x.status })).reverse() }); }
       case 'lead': {
         if (d.website) return out({ ok: true }); // فخ للروبوتات
+        let acc = ''; try { if (d.token) acc = auth(d.token, false, true).username; } catch (x) {}
         const name = String(d.name || '').trim().slice(0, 100), phone = String(d.phone || '').replace(/[^\d+]/g, '').slice(0, 20);
         if (name.length < 2 || phone.length < 8) throw new Error('اكتب الاسم ورقم الموبايل صح');
         const L = o => String(o || '').slice(0, 300);
-        upsert('Leads', 'id', { id: Utilities.getUuid(), time: now(), name, phone, governorate: L(d.governorate), service: L(d.service), people: L(d.people), travelDate: L(d.travelDate), payment: L(d.payment), notes: L(d.notes), status: 'جديد' });
+        upsert('Leads', 'id', { id: Utilities.getUuid(), time: now(), name, phone, governorate: L(d.governorate), service: L(d.service), people: L(d.people), travelDate: L(d.travelDate), payment: L(d.payment), notes: L(d.notes), status: 'جديد', account: acc });
         if (NOTIFY_EMAIL) try { MailApp.sendEmail(NOTIFY_EMAIL, 'طلب جديد من الموقع', name + ' — ' + phone + ' — ' + L(d.service)); } catch (x) {}
         return out({ ok: true });
       }
@@ -99,7 +127,7 @@ function doPost(e) {
       }
       case 'leads': auth(d.token); return out({ leads: rows('Leads').reverse() });
       case 'leadStatus': auth(d.token); upsert('Leads', 'id', { id: d.id, status: d.status }); return out({ ok: true });
-      case 'users': auth(d.token, true); return out({ users: rows('Users').map(u => ({ username: u.username, name: u.name, role: u.role, active: u.active })) });
+      case 'users': auth(d.token, true); return out({ users: rows('Users').filter(u => u.role !== 'visitor').map(u => ({ username: u.username, name: u.name, role: u.role, active: u.active })) });
       case 'addUser': {
         const u = auth(d.token, true);
         if (!/^[a-zA-Z0-9_.@-]{3,40}$/.test(d.username) || String(d.password).length < 8) throw new Error('اسم المستخدم 3 حروف إنجليزي أو أكتر، وكلمة السر 8 أو أكتر');
@@ -122,19 +150,33 @@ function seed() {
   const O = (title, category, priceFrom, price, details, hotel, stars, city, airline, duration) =>
     upsert('Offers', 'id', { id: Utilities.getUuid(), title, category, priceFrom, price, details, hotel, stars, city, airline, duration, image: '', status: 'active', updatedBy: 'seed', updatedAt: now() });
   const city = 'مكة والمدينة', madina = 'المدينة: نسك المدينة / درة الإيمان / طيبة هيلز — 3 ليالي\n';
-  O('ريع بخش — اقتصادي بالمواصلات', 'cash', 40500, 'تبدأ من 40,500 ج.م', 'رباعي: 40,500\nثلاثي: 43,500\nثنائي: 48,900\nسينجل: 64,500\nطفل: 31,500\nرضيع: 17,500\n' + madina + 'مكة: قصر العليان / النخبة 1 / أبراج القصواء — 11 ليلة' + note, 'قصر العليان / النخبة 1 / أبراج القصواء', '', city, '', '14 ليلة');
-  O('اقتصادي مشي — بير بليلة', 'cash', 42000, 'تبدأ من 42,000 ج.م', 'رباعي: 42,000\nثلاثي: 46,500\nثنائي: 52,900\nسينجل: 72,900\nطفل: 31,500\nرضيع: 17,500\n' + madina + 'مكة: إعمار أفاق — 11 ليلة' + note, 'إعمار أفاق', '', city, '', '14 ليلة');
-  O('اقتصادي مشي — أجياد السد', 'cash', 42500, 'تبدأ من 42,500 ج.م', 'رباعي: 42,500\nثلاثي: 46,900\nثنائي: 53,500\nسينجل: 73,900\nطفل: 31,500\nرضيع: 17,500\n' + madina + 'مكة: واحة الضيافة / العليان أجياد — 11 ليلة' + note, 'واحة الضيافة / العليان أجياد', '', city, '', '14 ليلة');
-  O('اقتصادي مميز — 4 + 5 ليالي', 'cash', 47000, 'تبدأ من 47,000 ج.م', 'رباعي: 47,000\nثلاثي: 50,900\nثنائي: 57,900\nالطيران: سعودي — القاهرة / المدينة / جدة / القاهرة\nالمدينة: كونكورد دار الخير — 4 ليالي\nمكة: الماسة جراند — 5 ليالي، 400 متر من الحرم', 'كونكورد دار الخير / الماسة جراند', 4, city, 'سعودي', '9 ليالي');
-  O('5 نجوم ب — 3 + 4 ليالي', 'cash', 55500, 'تبدأ من 55,500 ج.م', 'رباعي: 55,500\nثلاثي: 58,900\nثنائي: 64,500\nالطيران: سعودي\nالمدينة: درة الإيمان — 3 ليالي بالإفطار\nمكة: الشهداء — 4 ليالي بالإفطار، أول مطل على الحرم\nمواعيد: 17 أغسطس — 31 أغسطس — 7 سبتمبر — 21 سبتمبر', 'درة الإيمان / الشهداء', 5, city, 'سعودي', '7 ليالي');
-  O('5 نجوم أ — 3 + 4 ليالي', 'cash', 66900, 'تبدأ من 66,900 ج.م', 'رباعي: 66,900\nثلاثي: 70,900\nثنائي: 79,900\nالطيران: سعودي\nالمدينة: فندق الحرم — 3 ليالي بالإفطار\nمكة: الصفوة البرج الثالث — 4 ليالي بالإفطار، أول مطل على الحرم\nمواعيد: 17 أغسطس — 31 أغسطس — 7 سبتمبر — 21 سبتمبر', 'فندق الحرم / الصفوة البرج الثالث', 5, city, 'سعودي', '7 ليالي');
+  octoberOffers();
   [[1000, 24], [1250, 24], [1500, 24], [2000, 12], [2500, 12], [3000, 12], [4000, 12, 'الذهبية'], [5000, 12, 'البلاتينية']].forEach(a => {
     const f = n => n.toLocaleString('en-US');
-    O('عمرة التيسير' + (a[2] ? ' ' + a[2] : '') + ' — ' + f(a[0]) + ' شهريًا', 'tayseer', a[0] * a[1], f(a[0]) + ' ج.م شهريًا × ' + a[1] + ' شهر', 'الإجمالي: ' + f(a[0] * a[1]) + ' ج.م\nبدون مقدم وبدون فوائد\nقرعة كل 3 شهور لتحديد أدوار السفر\nالسفر بسعر الموسم كاش وقتها\nكل المشتركين يدخلون سحب عمرة مجانية', '', '', city, '', '7 أو 10 أو 15 يوم');
+    O('عمرة التيسير' + (a[2] ? ' ' + a[2] : '') + ' — ' + f(a[0]) + ' شهريًا', 'tayseer', a[0] * a[1], f(a[0]) + ' ج.م شهريًا × ' + a[1] + ' شهر', 'الإجمالي: ' + f(a[0] * a[1]) + ' ج.م\nبدون مقدم وبدون فوائد وبدون مصاريف إدارية\nقرعة كل 3 شهور: ' + (a[1] === 24 ? '8 قرعات' : '4 قرعات') + ' خلال المدة، واسمك بيطلع في واحدة منها\nتختار الوقت والبرنامج وتدفع الفرق بين إجمالي أقساطك وسعر البرنامج\nالسفر بسعر الموسم كاش وقتها\nكل المشتركين يدخلون سحب عمرة مجانية', '', '', city, '', '7 أو 10 أو 15 يوم');
   });
   O('تيسير شعبان ورمضان', 'tayseer', 42000, '3,500 ج.م شهريًا × 12 شهر', 'الإجمالي: 42,000 ج.م', '', '', city, '', '');
   O('تثبيت سعر رمضان', 'tayseer', 45000, '45,000 ج.م (بدون تذاكر الطيران)', 'سعر ثابت لرمضان', '', '', city, '', '');
   O('الحج السياحي', 'hajj', 395000, 'من 395,000 إلى 650,000 ج.م', 'عدة مستويات وبرامج بتفاصيل مختلفة للإقامة والقرب من الحرم. (حدّث التفاصيل من لوحة التحكم)', '', '', city, '', '');
   O('الحج الميسر', 'hajj', 0, 'اسأل عن السعر', 'برنامج حج ميسر بخدمات متكاملة وخيارات متعددة. (حدّث الأسعار من لوحة التحكم)', '', '', city, '', '');
   O('الحج الميسر بالتقسيط', 'hajj', 0, 'تقسيط حتى 120,000 ج.م', 'قسّط جزءًا من سعر أي برنامج حج على 24 شهرًا بواقع 5,000 ج.م شهريًا، وادفع باقي السعر مقدمًا.', '', '', city, '', '');
+}
+
+// ---------- عروض أكتوبر (من الفلايرات) ----------
+// لو شغّلت setup() قبل كده: شغّل octoberOffers() مرة واحدة بس، وأخفي العروض القديمة من لوحة التحكم
+function octoberOffers() {
+  const ex = {}; rows('Offers').forEach(o => ex[o.title] = o.id);
+  const mk = 'مكة: قصر العليان أو أبراج القصواء أو النخبة 1 — 11 ليلة', md = 'المدينة: نسك المدينة أو وردة الريان أو طيبة هيلز — 3 ليالي';
+  const T = (d, img, air, flight, p, mkt) => ({
+    title: 'رحلة ' + d + ' أكتوبر — ' + air, category: 'cash', priceFrom: p[0], price: 'تبدأ من ' + p[0].toLocaleString('en-US') + ' ج.م',
+    details: ['الطيران: ' + air + ' (' + flight + ')', 'مستوى ريع بخش (اقتصادي بالمواصلات)', mkt || mk, md, 'رباعي: ' + p[0], 'ثلاثي: ' + p[1], 'ثنائي: ' + p[2], 'سينجل: ' + p[3], 'طفل: ' + p[4], 'رضيع: ' + p[5]].join('\n'),
+    airline: air, duration: '14 يوم', image: 'images/' + img + '.jpg' });
+  [T(9, 'oct-9', 'الطيران السعودي', 'مكة أولًا: برج - جدة - برج', [40600, 43600, 49200, 64200, 31600, 17500], 'مكة: قصر العليان — 11 ليلة'),
+   T(17, 'oct-17', 'إير كايرو', 'مدينة مباشر: برج - مدينة - جدة - برج', [41900, 44900, 50900, 65500, 32900, 17500]),
+   T(26, 'oct-26', 'الطيران السعودي', 'مكة أولًا: برج - جدة - برج', [40600, 43600, 49200, 64200, 31600, 17500]),
+   T(31, 'oct-31', 'إير كايرو', 'مدينة أولًا: برج - جدة - برج', [39900, 42900, 48500, 63500, 30900, 17500])
+  ].forEach(o => {
+    if (ex[o.title]) upsert('Offers', 'id', Object.assign({ id: ex[o.title], updatedBy: 'seed', updatedAt: now() }, o)); // يحدّث العرض الموجود (التفاصيل والصورة) من غير ما يغيّر الإخفاء
+    else upsert('Offers', 'id', Object.assign({ id: Utilities.getUuid(), hotel: '', stars: '', city: 'مكة والمدينة', status: 'active', updatedBy: 'seed', updatedAt: now() }, o));
+  });
 }
