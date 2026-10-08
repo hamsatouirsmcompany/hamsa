@@ -52,6 +52,12 @@ footer{padding:32px 5vw;text-align:center;color:var(--mute);font-size:.9rem}
 .ty .ex{background:#fac80f33;border-radius:10px;padding:8px 12px;font-size:.92rem}
 .fh.im{height:auto;background:#fff}.fh.im img{height:auto;opacity:1;cursor:zoom-in;display:block}.fh.im .bd{display:none}
 #idlg{padding:0;width:min(720px,96vw)}#idlg img{width:100%;display:block}#idlg button{position:absolute;top:8px;inset-inline-start:8px}
+.tb{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.tb input,.tb select{width:auto;flex:1 1 140px}
+.bulk{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);border:2px solid var(--y);border-radius:10px;padding:10px;margin-bottom:12px;position:sticky;top:0;z-index:3}.bulk input,.bulk select{width:auto}
+tr.off td:nth-child(2),tr.off td:nth-child(3){opacity:.5}.ac{white-space:nowrap}
+.sw{border-radius:50px;padding:4px 14px;background:transparent;color:var(--mute);border-color:var(--line)}.sw.on{background:#1f9d55;border-color:#1f9d55;color:#fff}
+fieldset.rm{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0}.g2,.g3{display:grid;gap:10px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+#toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--hd);color:#fff;padding:10px 18px;border-radius:50px;z-index:10;opacity:0;pointer-events:none;transition:opacity .2s}#toast.show{opacity:1}#toast.bad{background:var(--err)}
 </style>
 </head>
 <body>
@@ -99,6 +105,7 @@ footer{padding:32px 5vw;text-align:center;color:var(--mute);font-size:.9rem}
 <label>ملاحظات<textarea name="notes" rows="2" maxlength="200"></textarea></label>
 <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
 <div id="bmsg" class="msg" hidden></div><div><button id="bgo">تأكيد الحجز</button> <button type="button" class="o" onclick="bdlg.close()">إلغاء</button></div></form></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
 <dialog id="idlg"><button onclick="idlg.close()">إغلاق ✕</button><img alt=""></dialog>
 <dialog id="ldlg"><form id="lform" style="display:grid;gap:10px"><h2 id="ltitle">تسجيل الدخول</h2>
 <label id="lname" hidden>الاسم<input name="name" autocomplete="name"></label>
@@ -161,7 +168,7 @@ $('#lead').onsubmit = async e => {
 
 // ----- الدخول -----
 function ui() { $('#loginBtn').textContent = me ? 'خروج (' + me.name + ')' : 'تسجيل الدخول'; $('#adminBtn').hidden = !me; $('#adminBtn').textContent = me && me.role === 'visitor' ? 'حسابي' : 'لوحة التحكم'; if (!me) showAdmin(false); }
-function logout() { token = me = null; favs = new Set(); render(); sessionStorage.clear(); ui(); }
+function logout() { token = me = null; window._o = null; adm.sel.clear(); favs = new Set(); render(); sessionStorage.clear(); ui(); }
 $('#loginBtn').onclick = () => me ? logout() : (location.href = 'login.html');
 $('#lsw').onclick = e => { e.preventDefault(); reg = !reg; $('#ltitle').textContent = reg ? 'إنشاء حساب جديد' : 'تسجيل الدخول'; $('#lname').hidden = !reg; $('#lname input').required = reg; $('#luser').textContent = reg ? 'الإيميل' : 'اسم المستخدم أو الإيميل'; $('#lgo').textContent = reg ? 'إنشاء الحساب' : 'دخول'; $('#lsw').textContent = reg ? 'عندي حساب؟ سجّل دخول' : 'زائر جديد؟ أنشئ حساب'; $('#lmsg').hidden = true; };
 $('#lform').onsubmit = async e => {
@@ -179,9 +186,96 @@ $('#adminBtn').onclick = () => showAdmin($('#admin').hidden);
 $('#atabs').onclick = e => e.target.dataset.a && aTab(e.target.dataset.a);
 
 // ----- لوحة التحكم -----
-const F = [['title', 'العنوان *'], ['category', 'القسم'], ['priceFrom', 'أقل سعر (رقم، للفلتر)'], ['price', 'السعر (نص يظهر للزائر)'], ['details', 'التفاصيل (سطر لكل بند)'], ['hotel', 'الفندق'], ['stars', 'النجوم (3-5)'], ['city', 'المدينة'], ['airline', 'شركة الطيران'], ['duration', 'المدة'], ['image', 'رابط صورة (اختياري — لو سبته فاضي هتظهر صورة تلقائية)']];
+const ROOMS = ['رباعي', 'ثلاثي', 'ثنائي', 'سينجل', 'طفل', 'رضيع'];
+const ROOMF = /^(?:ال)?(رباعي|ثلاثي|ثنائي|سينجل|طفل|رضيع)\s*[:：]\s*([\d,]+)\s*$/;
+const adm = { q: '', c: '', s: '', sel: new Set(), pend: 0 };
+const fmt = n => Number(n).toLocaleString('en-US');
+const byId = id => (window._o || []).find(o => o.id === id);
+const newId = () => crypto.randomUUID ? crypto.randomUUID() : 'o' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+function toast(m, bad) { const t = $('#toast'); t.textContent = m; t.className = 'show' + (bad ? ' bad' : ''); clearTimeout(toast.h); toast.h = setTimeout(() => t.className = '', bad ? 5000 : 2200); }
+function split(o) { const rooms = {}, rest = []; String(o.details || '').split('\n').forEach(l => { const t = l.trim(), m = t.match(ROOMF); if (m && !(m[1] in rooms)) rooms[m[1]] = m[2].replace(/,/g, ''); else if (t) rest.push(t); }); return { rooms, rest }; }
+const build = (rest, rooms) => rest.concat(ROOMS.filter(r => +rooms[r] > 0).map(r => r + ': ' + rooms[r])).join('\n');
+function lowest(rooms) { for (const r of ['رباعي', 'ثلاثي', 'ثنائي', 'سينجل']) if (+rooms[r] > 0) return +rooms[r]; return 0; }
+function syncPublic() { offers = window._o.filter(o => o.status === 'active'); $('#svc').innerHTML = '<option value="">اختر العرض</option>' + offers.map(o => `<option>${esc(o.title)}</option>`).join(''); render(); }
+// تعديل متفائل: الشاشة تتغير فورًا والحفظ في الخلفية، ولو فشل بيرجّع القديم
+async function patch(items, okMsg) {
+  const snap = items.map(it => ({ ...byId(it.id) }));
+  items.forEach(it => Object.assign(byId(it.id), it));
+  adm.pend++; drawTable(); drawBulk(); syncPublic();
+  try { await api('patchOffers', { items }); toast(okMsg || '✓ تم الحفظ'); }
+  catch (x) { snap.forEach(s => Object.assign(byId(s.id), s)); drawTable(); drawBulk(); syncPublic(); toast(x.message, true); }
+  finally { adm.pend--; }
+}
+function visibleOffers() { const q = adm.q.toLowerCase(); return window._o.filter(o => (!adm.c || o.category === adm.c) && (!adm.s || (adm.s === 'active') === (o.status === 'active')) && (!q || [o.title, o.price, o.airline, o.city, o.hotel, o.duration].join(' ').toLowerCase().includes(q))); }
+function drawTable() {
+  const l = visibleOffers(), owner = me.role === 'owner', box = $('#otable'); if (!box) return;
+  const row = o => { const on = o.status === 'active', id = esc(o.id); return `<tr class="${on ? '' : 'off'}"><td><input type="checkbox" data-sel="${id}"${adm.sel.has(o.id) ? ' checked' : ''} aria-label="تحديد"></td>
+<td><b>${esc(o.title)}</b><br><small>${CATS[o.category] || ''}${o.updatedBy ? ' · ' + esc(o.updatedBy) : ''}</small></td><td>${esc(o.price)}</td>
+<td>${owner ? `<button class="sw${on ? ' on' : ''}" data-act="tg" data-id="${id}" aria-pressed="${on}">${on ? 'ظاهر' : 'مخفي'}</button>` : (on ? 'ظاهر' : 'مخفي')}</td>
+<td class="ac"><button class="o" data-act="ed" data-id="${id}">تعديل</button> <button class="o" data-act="cp" data-id="${id}">نسخ</button></td></tr>`; };
+  box.innerHTML = '<div class="tw"><table><tr><th><input type="checkbox" id="selall" aria-label="تحديد الكل"' + (l.length && l.every(o => adm.sel.has(o.id)) ? ' checked' : '') + '></th><th>العرض</th><th>السعر</th><th>الحالة</th><th></th></tr>' +
+    (l.length ? l.map(row).join('') : '<tr><td colspan=5 class="empty">مفيش عروض بالشكل ده.</td></tr>') + '</table></div><p class="meta">' + l.length + ' عرض</p>';
+}
+function drawBulk() {
+  const b = $('#bulk'); if (!b) return; adm.sel.forEach(id => { if (!byId(id)) adm.sel.delete(id); });
+  if (!adm.sel.size) { b.innerHTML = ''; return; }
+  const keep = b.querySelector('#bpv') ? { v: $('#bpv').value, m: $('#bpm').value, u: $('#bpu').value, i: $('#bpi').checked } : { v: '', m: '1', u: '', i: false };
+  b.innerHTML = `<div class="bulk"><b>المحدد: ${adm.sel.size}</b>${me.role === 'owner' ? ' <button class="d" data-act="bs" data-s="hidden">إخفاء</button> <button data-act="bs" data-s="active">إظهار</button>' : ''}
+<span class="meta">| الأسعار:</span><select id="bpm"><option value="1">زيادة</option><option value="-1">خفض</option></select><input id="bpv" type="number" min="0" step="any" placeholder="القيمة" style="width:90px"><select id="bpu"><option value="">ج.م</option><option value="%">%</option></select>
+<label style="display:inline-flex;grid-auto-flow:column;align-items:center;gap:4px"><input type="checkbox" id="bpi" style="width:auto">شمل الرضيع</label><button data-act="bp">تطبيق</button> <button class="o" data-act="bc">إلغاء التحديد</button></div>`;
+  $('#bpv').value = keep.v; $('#bpm').value = keep.m; $('#bpu').value = keep.u; $('#bpi').checked = keep.i;
+}
+function bulkStatus(s) { const ids = [...adm.sel]; adm.sel.clear(); patch(ids.map(id => ({ id, status: s })), (s === 'active' ? '✓ اتظهر ' : '✓ اتخفى ') + ids.length + ' عرض'); }
+function bulkPrice() {
+  const val = parseFloat($('#bpv').value) * +$('#bpm').value, pct = $('#bpu').value === '%', inf = $('#bpi').checked;
+  if (!val) return toast('اكتب القيمة الأول', true);
+  const items = []; let skip = 0;
+  adm.sel.forEach(id => { const o = byId(id), { rooms, rest } = split(o), ks = Object.keys(rooms);
+    if (!ks.length) { skip++; return; }
+    ks.forEach(r => { if (r === 'رضيع' && !inf) return; const n = +rooms[r]; rooms[r] = String(Math.max(0, Math.round(pct ? Math.round(n * (1 + val / 100) / 10) * 10 : n + val))); });
+    const it = { id, details: build(rest, rooms) }, low = lowest(rooms);
+    if (low) { it.priceFrom = low; if (!o.price || /^تبدأ من/.test(o.price)) it.price = 'تبدأ من ' + fmt(low) + ' ج.م'; }
+    items.push(it); });
+  if (!items.length) return toast('العروض المحددة مفيهاش أسعار غرف (رباعي/ثلاثي...)', true);
+  if (!confirm('هيتعدّل سعر ' + items.length + ' عرض' + (skip ? ' (وهيتخطّى ' + skip + ' من غير أسعار غرف)' : '') + '. تكمّل؟')) return;
+  adm.sel.clear(); patch(items, '✓ اتعدّلت أسعار ' + items.length + ' عرض');
+}
+function paintOffers() {
+  const v = $('#aview');
+  v.innerHTML = `<div class="tb"><button onclick="editOffer()">+ عرض جديد</button><input id="aq" type="search" placeholder="ابحث في العروض..." value="${esc(adm.q)}"><select id="ac"><option value="">كل الأقسام</option>${Object.entries(CATS).map(([k, t]) => `<option value="${k}"${k === adm.c ? ' selected' : ''}>${t}</option>`).join('')}</select><select id="as"><option value="">ظاهر ومخفي</option><option value="active"${adm.s === 'active' ? ' selected' : ''}>الظاهر بس</option><option value="hidden"${adm.s === 'hidden' ? ' selected' : ''}>المخفي بس</option></select></div><div id="bulk"></div><div id="otable"></div>`;
+  v.onclick = e => { const b = e.target.closest('[data-act]'); if (!b) return; const a = b.dataset.act, id = b.dataset.id;
+    if (a === 'tg') { const on = byId(id).status === 'active'; patch([{ id, status: on ? 'hidden' : 'active' }], on ? '✓ اتخفى' : '✓ اتظهر'); }
+    else if (a === 'ed') editOffer(id); else if (a === 'cp') editOffer(id, true);
+    else if (a === 'bs') bulkStatus(b.dataset.s); else if (a === 'bp') bulkPrice();
+    else if (a === 'bc') { adm.sel.clear(); drawTable(); drawBulk(); } };
+  v.onchange = e => { const t = e.target;
+    if (t.id === 'ac') { adm.c = t.value; drawTable(); } else if (t.id === 'as') { adm.s = t.value; drawTable(); }
+    else if (t.dataset.sel !== undefined) { t.checked ? adm.sel.add(t.dataset.sel) : adm.sel.delete(t.dataset.sel); drawBulk(); const a = $('#selall'), l = visibleOffers(); if (a) a.checked = l.length > 0 && l.every(o => adm.sel.has(o.id)); }
+    else if (t.id === 'selall') { visibleOffers().forEach(o => t.checked ? adm.sel.add(o.id) : adm.sel.delete(o.id)); drawTable(); drawBulk(); } };
+  v.oninput = e => { if (e.target.id === 'aq') { adm.q = e.target.value.trim(); drawTable(); } };
+  drawTable(); drawBulk();
+}
+async function offersTab() {
+  const v = $('#aview'), had = !!window._o;
+  if (had) paintOffers(); else v.innerHTML = '<p class="empty">جاري التحميل...</p>';
+  try {
+    const l = (await api('allOffers')).offers; if (v.dataset.t !== 'offers') return;
+    if (had) { if (!adm.pend) { window._o = l; drawTable(); drawBulk(); } } else { window._o = l; paintOffers(); }
+  } catch (x) { if (!had) v.innerHTML = `<p class="msg er">${esc(x.message)}</p>`; else toast(x.message, true); }
+}
+async function saveOffer(d) {
+  const prev = byId(d.id) ? { ...byId(d.id) } : null;
+  const loc = { ...(prev || {}), ...d, updatedBy: me.name };
+  if (prev) Object.assign(byId(d.id), loc); else window._o.unshift(loc);
+  adm.pend++; drawTable(); syncPublic(); toast('جاري الحفظ…');
+  try { await api('saveOffer', { offer: d }); toast('✓ تم الحفظ'); }
+  catch (x) { const j = window._o.findIndex(o => o.id === d.id); if (prev) window._o[j] = prev; else window._o.splice(j, 1); drawTable(); syncPublic(); toast('ما اتحفظش: ' + x.message, true); }
+  finally { adm.pend--; }
+}
 async function aTab(t) {
-  const v = $('#aview'); v.innerHTML = '<p class="empty">جاري التحميل...</p>';
+  const v = $('#aview'); v.onclick = v.onchange = v.oninput = null; v.dataset.t = t;
+  if (t === 'offers') return offersTab();
+  v.innerHTML = '<p class="empty">جاري التحميل...</p>';
   try {
     if (t === 'fav') {
       v.innerHTML = '<div class="grid">' + (offers.filter(o => favs.has(o.id)).map(card).join('') || '<p class="empty">لسه ما حفظتش عروض. دوس على ♡ في أي عرض.</p>') + '</div>';
@@ -189,11 +283,6 @@ async function aTab(t) {
     } else if (t === 'mine') {
       const l = (await api('myLeads')).leads;
       v.innerHTML = '<div class="tw"><table><tr><th>العرض</th><th>التاريخ</th><th>الحالة</th></tr>' + (l.length ? l.map(x => `<tr><td>${esc(x.service)}</td><td>${esc(String(x.time).slice(0, 10))}</td><td>${esc(x.status)}</td></tr>`).join('') : '<tr><td colspan=3 class="empty">لسه ما بعتش طلبات. ابعت طلب من الموقع وهيظهر هنا.</td></tr>') + '</table></div>';
-    } else if (t === 'offers') {
-      const l = (await api('allOffers')).offers; window._o = l;
-      v.innerHTML = '<p><button onclick="editOffer()">+ عرض جديد</button></p><div class="tw"><table><tr><th>العنوان</th><th>القسم</th><th>السعر</th><th>الحالة</th><th>آخر تعديل</th><th></th></tr>' +
-        l.map((o, i) => `<tr><td>${esc(o.title)}</td><td>${CATS[o.category] || ''}</td><td>${esc(o.price)}</td><td>${o.status === 'active' ? 'ظاهر' : 'مخفي'}</td><td>${esc(o.updatedBy)}</td>
-<td><button class="o" onclick="editOffer(${i})">تعديل</button> ${me.role === 'owner' ? `<button class="d" onclick="setSt('${o.id}','${o.status === 'active' ? 'hidden' : 'active'}')">${o.status === 'active' ? 'إخفاء' : 'إظهار'}</button>` : ''}</td></tr>`).join('') + '</table></div>';
     } else if (t === 'leads') {
       const l = (await api('leads')).leads;
       v.innerHTML = '<div class="tw"><table><tr><th>الاسم</th><th>الموبايل</th><th>العرض</th><th>أشخاص</th><th>موعد</th><th>دفع</th><th>ملاحظات</th><th>الحالة</th></tr>' + (l.length ? l.map(x => `<tr><td>${esc(x.name)}<br><small>${esc(String(x.time).slice(0, 10))}</small></td><td><a href="tel:${esc(x.phone)}">${esc(x.phone)}</a></td><td>${esc(x.service)}</td><td>${esc(x.people)}</td><td>${esc(x.travelDate)}</td><td>${esc(x.payment)}</td><td>${esc(x.notes)}</td>
@@ -205,21 +294,34 @@ async function aTab(t) {
     }
   } catch (x) { v.innerHTML = `<p class="msg er">${esc(x.message)}</p>`; }
 }
-window.editOffer = i => {
-  const o = i === undefined ? { category: cat, status: 'active' } : window._o[i];
-  $('#dform').innerHTML = '<h2>' + (o.id ? 'تعديل عرض' : 'عرض جديد') + '</h2>' + F.map(([k, n]) => k === 'details' ? `<label>${n}<textarea name="${k}" rows="6">${esc(o[k])}</textarea></label>` : k === 'category' ? `<label>${n}<select name="category">${Object.entries(CATS).map(([c, t]) => `<option value="${c}"${c === o.category ? ' selected' : ''}>${t}</option>`).join('')}</select></label>` : `<label>${n}<input name="${k}" value="${esc(o[k])}"></label>`).join('') +
-    '<div id="dmsg" class="er msg" hidden></div><div><button value="x">حفظ</button> <button type="button" class="o" onclick="dlg.close()">إلغاء</button></div>';
-  $('#dform').onsubmit = async e => {
-    e.preventDefault(); const d = Object.fromEntries(new FormData(e.target)); d.id = o.id; d.status = o.status; d.priceFrom = +d.priceFrom || 0; d.stars = d.stars ? +d.stars : '';
-    if (d.image && !/^(https:\/\/|images\/)/.test(d.image)) { $('#dmsg').hidden = false; $('#dmsg').textContent = 'رابط الصورة لازم يبدأ بـ https:// أو images/'; return; }
-    const m = $('#dmsg'), b = e.target.querySelector('button[value=x]');
-    m.hidden = false; m.className = 'msg ok'; m.textContent = '⏳ جاري تنفيذ التعديل...'; b.disabled = true;
-    try { await api('saveOffer', { offer: d }); m.textContent = '✓ تم التعديل'; await new Promise(r => setTimeout(r, 700)); dlg.close(); aTab('offers'); load(); }
-    catch (x) { m.className = 'msg er'; m.textContent = x.message; b.disabled = false; }
+window.editOffer = (id, copy) => {
+  const o = id ? { ...byId(id) } : { category: adm.c || cat, status: 'active' };
+  if (copy) { o.id = ''; o.title = o.title + ' (نسخة)'; o.status = 'active'; }
+  const { rooms, rest } = split(o), I = (k, n, x = '') => `<label>${n}<input name="${k}" value="${esc(o[k])}" ${x}></label>`;
+  $('#dform').innerHTML = `<h2>${copy ? 'نسخ عرض' : o.id ? 'تعديل عرض' : 'عرض جديد'}</h2>` +
+    `<label>العنوان *<input name="title" value="${esc(o.title)}" required></label>` +
+    `<div class="g2"><label>القسم<select name="category">${Object.entries(CATS).map(([c, t]) => `<option value="${c}"${c === o.category ? ' selected' : ''}>${t}</option>`).join('')}</select></label>${I('duration', 'المدة')}</div>` +
+    `<fieldset class="rm"><legend>أسعار الغرف (جنيه) — سيب اللي مش موجود فاضي</legend><div class="g3">${ROOMS.map(r => `<label>${r}<input name="r_${r}" type="number" min="0" inputmode="numeric" value="${esc(rooms[r] ?? '')}"></label>`).join('')}</div></fieldset>` +
+    `<div class="g2">${I('price', 'السعر (نص يظهر للزائر)')}${I('priceFrom', 'أقل سعر (رقم للفلتر)', 'type="number" min="0"')}</div>` +
+    `<div class="meta">لو كتبت أسعار الغرف: «أقل سعر» و«تبدأ من» بيتحدثوا لوحدهم من سعر الرباعي.</div>` +
+    `<label>تفاصيل تانية (سطر لكل بند)<textarea name="details" rows="5">${esc(rest.join('\n'))}</textarea></label>` +
+    `<div class="g2">${I('hotel', 'الفندق')}${I('stars', 'النجوم (3-5)', 'type="number" min="1" max="5"')}</div><div class="g2">${I('city', 'المدينة')}${I('airline', 'شركة الطيران')}</div>` +
+    I('image', 'رابط صورة (اختياري — لو سبته فاضي هتظهر صورة تلقائية)') +
+    '<div id="dmsg" class="er msg" hidden></div><div><button value="x">حفظ</button> <button type="button" class="o" onclick="dlg.close()">إلغاء</button> <small class="meta">Ctrl+Enter للحفظ</small></div>';
+  const f0 = $('#dform');
+  f0.onkeydown = e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); f0.requestSubmit(); } };
+  f0.onsubmit = e => {
+    e.preventDefault(); const f = Object.fromEntries(new FormData(e.target)), m = $('#dmsg'), err = x => { m.hidden = false; m.textContent = x; };
+    if (!f.title.trim()) return err('اكتب عنوان العرض');
+    if (f.image && !/^(https:\/\/|images\/)/.test(f.image)) return err('رابط الصورة لازم يبدأ بـ https:// أو images/');
+    const rm = {}; ROOMS.forEach(r => { const n = Math.round(+f['r_' + r]); if (n > 0) rm[r] = String(n); });
+    const d = { id: o.id || newId(), title: f.title.trim(), category: f.category, duration: f.duration, hotel: f.hotel, stars: f.stars ? +f.stars : '', city: f.city, airline: f.airline, image: f.image,
+      details: build(f.details.split('\n').map(s => s.trim()).filter(Boolean), rm), price: f.price, priceFrom: +f.priceFrom || 0, status: o.status }, low = lowest(rm);
+    if (low) { if (String(o.priceFrom ?? '') === f.priceFrom) d.priceFrom = low; if (!f.price || (f.price === String(o.price ?? '') && /^تبدأ من/.test(f.price))) d.price = 'تبدأ من ' + fmt(low) + ' ج.م'; }
+    dlg.close(); saveOffer(d);
   };
   dlg.showModal();
 };
-window.setSt = async (id, status) => { try { await api('setStatus', { id, status }); aTab('offers'); load(); } catch (x) { alert(x.message); } };
 window.addU = async e => { e.preventDefault(); try { await api('addUser', Object.fromEntries(new FormData(e.target))); aTab('users'); } catch (x) { alert(x.message); } };
 window.actU = async (username, active) => { try { await api('setActive', { username, active }); aTab('users'); } catch (x) { alert(x.message); } };
 let bo = null;
