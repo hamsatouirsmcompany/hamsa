@@ -133,7 +133,7 @@ $('#lead').onsubmit = async e => {
 // ----- الدخول -----
 function ui() { $('#loginBtn').textContent = me ? 'خروج (' + me.name + ')' : 'تسجيل الدخول'; $('#adminBtn').hidden = !me; $('#adminBtn').textContent = me && me.role === 'visitor' ? 'حسابي' : 'لوحة التحكم'; if (!me) showAdmin(false); }
 function logout() { token = me = null; favs = new Set(); render(); sessionStorage.clear(); ui(); }
-$('#loginBtn').onclick = () => me ? logout() : ldlg.showModal();
+$('#loginBtn').onclick = () => me ? logout() : (location.href = 'login.html');
 $('#lsw').onclick = e => { e.preventDefault(); reg = !reg; $('#ltitle').textContent = reg ? 'إنشاء حساب جديد' : 'تسجيل الدخول'; $('#lname').hidden = !reg; $('#lname input').required = reg; $('#luser').textContent = reg ? 'الإيميل' : 'اسم المستخدم أو الإيميل'; $('#lgo').textContent = reg ? 'إنشاء الحساب' : 'دخول'; $('#lsw').textContent = reg ? 'عندي حساب؟ سجّل دخول' : 'زائر جديد؟ أنشئ حساب'; $('#lmsg').hidden = true; };
 $('#lform').onsubmit = async e => {
   e.preventDefault(); const f = Object.fromEntries(new FormData(e.target));
@@ -143,7 +143,7 @@ $('#lform').onsubmit = async e => {
   catch (x) { $('#lmsg').hidden = false; $('#lmsg').textContent = x.message; }
 };
 async function loadFavs() { if (!me) return; try { favs = new Set((await api('favs')).ids); } catch (x) {} render(); }
-async function toggleFav(id) { if (!me) { ldlg.showModal(); return; } try { favs = new Set((await api('toggleFav', { id })).ids); } catch (x) { alert(x.message); } render(); if (!$('#admin').hidden && me.role === 'visitor') aTab('fav'); }
+async function toggleFav(id) { if (!me) { location.href = 'login.html'; return; } try { favs = new Set((await api('toggleFav', { id })).ids); } catch (x) { alert(x.message); } render(); if (!$('#admin').hidden && me.role === 'visitor') aTab('fav'); }
 function showAdmin(on) { $('#admin').hidden = !on; $('#site').hidden = on; if (on) { const t = me.role === 'visitor' ? [['fav', 'المفضلة'], ['mine', 'طلباتي']] : [['offers', 'العروض'], ['leads', 'الطلبات']]; if (me.role === 'owner') t.push(['users', 'الموظفين']);
   $('#atabs').innerHTML = t.map(x => `<button data-a="${x[0]}">${x[1]}</button>`).join('') + ' <button class="o" id="back">رجوع للموقع</button>'; $('#back').onclick = () => showAdmin(false); aTab(t[0][0]); } }
 $('#adminBtn').onclick = () => showAdmin($('#admin').hidden);
@@ -191,7 +191,7 @@ window.setSt = async (id, status) => { try { await api('setStatus', { id, status
 window.addU = async e => { e.preventDefault(); try { await api('addUser', Object.fromEntries(new FormData(e.target))); aTab('users'); } catch (x) { alert(x.message); } };
 window.actU = async (username, active) => { try { await api('setActive', { username, active }); aTab('users'); } catch (x) { alert(x.message); } };
 window.api = api;
-ui(); load().then(loadFavs);
+ui(); load().then(loadFavs); if (me && me.role !== 'visitor' && location.hash === '#admin') showAdmin(true);
 </script>
 </body>
 </html>
