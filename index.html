@@ -10,7 +10,7 @@
 :root{--bg:#f3f9fc;--card:#fff;--ink:#0f2433;--mute:#4f6676;--hd:#0b2f47;--g:#0b2f47;--g2:#14587f;--gold:#8a6700;--y:#fac80f;--line:#d3e4ee;--err:#b3261e}
 @media(prefers-color-scheme:dark){:root:not([data-t=l]){--bg:#0a1b27;--card:#10293a;--ink:#e6f1f8;--mute:#9ab5c6;--hd:#071d2d;--g:#8cd0f5;--g2:#14587f;--gold:#fac80f;--line:#223f52;--err:#ff8a80}}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
-body{margin:0;font:16px/1.7 'IBM Plex Sans Arabic',Tahoma,sans-serif;background:var(--bg);color:var(--ink)}
+body{overflow-x:clip;margin:0;font:16px/1.7 'IBM Plex Sans Arabic',Tahoma,sans-serif;background:var(--bg);color:var(--ink)}
 header{position:sticky;top:0;z-index:5;background:var(--hd);color:#fff;border-bottom:3px solid var(--y);display:flex;align-items:center;justify-content:space-between;padding:10px 5vw}
 header b{font-size:1.25rem}header button{background:transparent;border:1px solid #fff8;color:#fff}
 .hero{position:relative;overflow:hidden;background:#0b2f47 url(images/kaaba-day.webp) center/cover;color:#fff;padding:72px 5vw 80px;border-bottom:4px solid var(--y)}.hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.45}.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#0b2f47ee 30%,#0b2f4755);z-index:1}.hero>*:not(video){position:relative;z-index:2}@media(prefers-reduced-motion:reduce){.hero video{display:none}}.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}.gal img{width:100%;height:150px;object-fit:cover;border-radius:10px}
@@ -75,19 +75,21 @@ footer{padding:32px 5vw;text-align:center;color:var(--mute);font-size:.9rem}
 <a class="btn wa" id="wa" target="_blank" rel="noopener">واتساب</a>
 
 <dialog id="dlg"><form method="dialog" id="dform" style="display:grid;gap:10px"></form></dialog>
-<dialog id="ldlg"><form id="lform" style="display:grid;gap:10px"><h2>دخول الإدارة</h2>
-<label>اسم المستخدم<input name="u" required autocomplete="username"></label>
+<dialog id="ldlg"><form id="lform" style="display:grid;gap:10px"><h2 id="ltitle">تسجيل الدخول</h2>
+<label id="lname" hidden>الاسم<input name="name" autocomplete="name"></label>
+<label><span id="luser">اسم المستخدم أو الإيميل</span><input name="u" required autocomplete="username"></label>
 <label>كلمة السر<input name="p" type="password" required autocomplete="current-password"></label>
-<div id="lmsg" class="er msg" hidden></div><div><button>دخول</button> <button type="button" class="o" onclick="ldlg.close()">إلغاء</button></div></form></dialog>
+<div id="lmsg" class="er msg" hidden></div><div><button id="lgo">دخول</button> <button type="button" class="o" onclick="ldlg.close()">إلغاء</button></div>
+<a href="#" id="lsw" style="color:var(--g)">زائر جديد؟ أنشئ حساب</a></form></dialog>
 
 <script>
 // ضع هنا رابط الـ Web app بعد ما تنشره من Apps Script
-const API = 'https://script.google.com/macros/s/AKfycbxRr2PYw2kkY9TiAGVT0MfswIBsxYPtrVuRBvXjzrOTVdr7ueGHOSLjHkUEZkshPmEOFg/exec';
+const API = 'ضع_رابط_APPS_SCRIPT_هنا';
 const WA = '201096177756';
 const CATS = { cash: 'عمرة الكاش', tayseer: 'عمرة التيسير', hajj: 'الحج' };
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-let offers = [], cat = 'cash', token = sessionStorage.getItem('t'), me = JSON.parse(sessionStorage.getItem('me') || 'null');
+let favs = new Set(), reg = false, offers = [], cat = 'cash', token = sessionStorage.getItem('t'), me = JSON.parse(sessionStorage.getItem('me') || 'null');
 $('#wa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('السلام عليكم، أرغب في الاستفسار عن برامج همسة للسياحة');
 
 async function api(action, data = {}) {
@@ -107,19 +109,20 @@ async function load() {
   $('#svc').innerHTML = '<option value="">اختر العرض</option>' + offers.map(o => `<option>${esc(o.title)}</option>`).join('');
   render();
 }
+const card = o => `<article class="card"><img loading="lazy" alt="" src="${esc(pic(o))}"><div>
+<h3>${esc(o.title)}</h3><div class="price">${esc(o.price)}</div>
+<div class="meta">${[o.hotel, o.stars ? '★'.repeat(o.stars) : '', o.airline, o.duration].filter(Boolean).map(esc).join(' · ')}</div>
+<div class="det">${esc(o.details)}</div>
+<div class="row"><button class="o" data-fav="${esc(o.id)}" aria-label="المفضلة" aria-pressed="${favs.has(o.id)}">${favs.has(o.id) ? '♥' : '♡'}</button><button data-ask="${esc(o.title)}">اطلب هذا العرض</button><a class="btn o" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent('استفسار عن: ' + o.title)}">واتساب</a></div></div></article>`;
 function render() {
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.c === cat));
   const q = $('#q').value.trim(), mp = +$('#maxp').value, st = $('#stars').value, ct = $('#city').value;
   const l = offers.filter(o => o.category === cat && (!q || JSON.stringify(o).includes(q)) && (!mp || !o.priceFrom || o.priceFrom <= mp) && (!st || String(o.stars) === st) && (!ct || String(o.city).includes(ct)));
-  $('#list').innerHTML = l.length ? l.map(o => `<article class="card"><img loading="lazy" alt="" src="${esc(pic(o))}"><div>
-<h3>${esc(o.title)}</h3><div class="price">${esc(o.price)}</div>
-<div class="meta">${[o.hotel, o.stars ? '★'.repeat(o.stars) : '', o.airline, o.duration].filter(Boolean).map(esc).join(' · ')}</div>
-<div class="det">${esc(o.details)}</div>
-<div class="row"><button data-ask="${esc(o.title)}">اطلب هذا العرض</button><a class="btn o" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent('استفسار عن: ' + o.title)}">واتساب</a></div></div></article>`).join('') : '<p class="empty">مفيش عروض بالشكل ده دلوقتي. جرّب تغيّر الفلاتر أو كلّمنا على واتساب.</p>';
+  $('#list').innerHTML = l.length ? l.map(card).join('') : '<p class="empty">مفيش عروض بالشكل ده دلوقتي. جرّب تغيّر الفلاتر أو كلّمنا على واتساب.</p>';
 }
 $('#tabs').onclick = e => { if (e.target.dataset.c) { cat = e.target.dataset.c; render(); } };
 ['#q', '#maxp', '#stars', '#city'].forEach(s => $(s).oninput = render);
-$('#list').onclick = e => { const t = e.target.dataset.ask; if (t) { $('#svc').value = t; $('#contact').scrollIntoView(); $('[name=name]').focus(); } };
+$('#list').onclick = e => { const f = e.target.dataset.fav; if (f) return toggleFav(f); const t = e.target.dataset.ask; if (t) { $('#svc').value = t; $('#contact').scrollIntoView(); $('[name=name]').focus(); } };
 
 $('#lead').onsubmit = async e => {
   e.preventDefault(); const m = $('#leadMsg');
@@ -128,17 +131,21 @@ $('#lead').onsubmit = async e => {
 };
 
 // ----- الدخول -----
-function ui() { $('#loginBtn').textContent = me ? 'خروج (' + me.name + ')' : 'تسجيل الدخول'; $('#adminBtn').hidden = !me; if (!me) showAdmin(false); }
-function logout() { token = me = null; sessionStorage.clear(); ui(); }
+function ui() { $('#loginBtn').textContent = me ? 'خروج (' + me.name + ')' : 'تسجيل الدخول'; $('#adminBtn').hidden = !me; $('#adminBtn').textContent = me && me.role === 'visitor' ? 'حسابي' : 'لوحة التحكم'; if (!me) showAdmin(false); }
+function logout() { token = me = null; favs = new Set(); render(); sessionStorage.clear(); ui(); }
 $('#loginBtn').onclick = () => me ? logout() : ldlg.showModal();
+$('#lsw').onclick = e => { e.preventDefault(); reg = !reg; $('#ltitle').textContent = reg ? 'إنشاء حساب جديد' : 'تسجيل الدخول'; $('#lname').hidden = !reg; $('#lname input').required = reg; $('#luser').textContent = reg ? 'الإيميل' : 'اسم المستخدم أو الإيميل'; $('#lgo').textContent = reg ? 'إنشاء الحساب' : 'دخول'; $('#lsw').textContent = reg ? 'عندي حساب؟ سجّل دخول' : 'زائر جديد؟ أنشئ حساب'; $('#lmsg').hidden = true; };
 $('#lform').onsubmit = async e => {
-  e.preventDefault();
-  try { const r = await api('login', Object.fromEntries(new FormData(e.target))); token = r.token; me = { name: r.name, role: r.role };
-    sessionStorage.setItem('t', token); sessionStorage.setItem('me', JSON.stringify(me)); e.target.reset(); ldlg.close(); ui(); showAdmin(true); }
+  e.preventDefault(); const f = Object.fromEntries(new FormData(e.target));
+  try { if (reg) await api('register', { name: f.name, email: f.u, password: f.p });
+    const r = await api('login', { u: f.u, p: f.p }); token = r.token; me = { name: r.name, role: r.role };
+    sessionStorage.setItem('t', token); sessionStorage.setItem('me', JSON.stringify(me)); e.target.reset(); ldlg.close(); ui(); loadFavs(); if (me.role !== 'visitor') showAdmin(true); }
   catch (x) { $('#lmsg').hidden = false; $('#lmsg').textContent = x.message; }
 };
-function showAdmin(on) { $('#admin').hidden = !on; $('#site').hidden = on; if (on) { const t = [['offers', 'العروض'], ['leads', 'الطلبات']]; if (me.role === 'owner') t.push(['users', 'الموظفين']);
-  $('#atabs').innerHTML = t.map(x => `<button data-a="${x[0]}">${x[1]}</button>`).join('') + ' <button class="o" id="back">رجوع للموقع</button>'; $('#back').onclick = () => showAdmin(false); aTab('offers'); } }
+async function loadFavs() { if (!me) return; try { favs = new Set((await api('favs')).ids); } catch (x) {} render(); }
+async function toggleFav(id) { if (!me) { ldlg.showModal(); return; } try { favs = new Set((await api('toggleFav', { id })).ids); } catch (x) { alert(x.message); } render(); if (!$('#admin').hidden && me.role === 'visitor') aTab('fav'); }
+function showAdmin(on) { $('#admin').hidden = !on; $('#site').hidden = on; if (on) { const t = me.role === 'visitor' ? [['fav', 'المفضلة'], ['mine', 'طلباتي']] : [['offers', 'العروض'], ['leads', 'الطلبات']]; if (me.role === 'owner') t.push(['users', 'الموظفين']);
+  $('#atabs').innerHTML = t.map(x => `<button data-a="${x[0]}">${x[1]}</button>`).join('') + ' <button class="o" id="back">رجوع للموقع</button>'; $('#back').onclick = () => showAdmin(false); aTab(t[0][0]); } }
 $('#adminBtn').onclick = () => showAdmin($('#admin').hidden);
 $('#atabs').onclick = e => e.target.dataset.a && aTab(e.target.dataset.a);
 
@@ -147,7 +154,13 @@ const F = [['title', 'العنوان *'], ['category', 'القسم'], ['priceFro
 async function aTab(t) {
   const v = $('#aview'); v.innerHTML = '<p class="empty">جاري التحميل...</p>';
   try {
-    if (t === 'offers') {
+    if (t === 'fav') {
+      v.innerHTML = '<div class="grid">' + (offers.filter(o => favs.has(o.id)).map(card).join('') || '<p class="empty">لسه ما حفظتش عروض. دوس على ♡ في أي عرض.</p>') + '</div>';
+      v.onclick = e => { if (e.target.dataset.fav) toggleFav(e.target.dataset.fav); else if (e.target.dataset.ask) { showAdmin(false); $('#svc').value = e.target.dataset.ask; $('#contact').scrollIntoView(); } };
+    } else if (t === 'mine') {
+      const l = (await api('myLeads')).leads;
+      v.innerHTML = '<div class="tw"><table><tr><th>العرض</th><th>التاريخ</th><th>الحالة</th></tr>' + (l.length ? l.map(x => `<tr><td>${esc(x.service)}</td><td>${esc(String(x.time).slice(0, 10))}</td><td>${esc(x.status)}</td></tr>`).join('') : '<tr><td colspan=3 class="empty">لسه ما بعتش طلبات. ابعت طلب من الموقع وهيظهر هنا.</td></tr>') + '</table></div>';
+    } else if (t === 'offers') {
       const l = (await api('allOffers')).offers; window._o = l;
       v.innerHTML = '<p><button onclick="editOffer()">+ عرض جديد</button></p><div class="tw"><table><tr><th>العنوان</th><th>القسم</th><th>السعر</th><th>الحالة</th><th>آخر تعديل</th><th></th></tr>' +
         l.map((o, i) => `<tr><td>${esc(o.title)}</td><td>${CATS[o.category] || ''}</td><td>${esc(o.price)}</td><td>${o.status === 'active' ? 'ظاهر' : 'مخفي'}</td><td>${esc(o.updatedBy)}</td>
@@ -178,7 +191,7 @@ window.setSt = async (id, status) => { try { await api('setStatus', { id, status
 window.addU = async e => { e.preventDefault(); try { await api('addUser', Object.fromEntries(new FormData(e.target))); aTab('users'); } catch (x) { alert(x.message); } };
 window.actU = async (username, active) => { try { await api('setActive', { username, active }); aTab('users'); } catch (x) { alert(x.message); } };
 window.api = api;
-ui(); load();
+ui(); load().then(loadFavs);
 </script>
 </body>
 </html>
