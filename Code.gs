@@ -37,12 +37,18 @@ const now = () => new Date().toISOString();
 const sh = n => SpreadsheetApp.getActive().getSheetByName(n);
 function table(n) { const s = sh(n), v = s.getDataRange().getValues(), h = v.shift(); return { s, h, v }; }
 function rows(n) { const t = table(n); return t.v.map(r => Object.fromEntries(t.h.map((k, i) => [k, r[i]]))); }
-function upsert(n, key, o) {
-  const t = table(n), ki = t.h.indexOf(key);
-  const i = t.v.findIndex(r => String(r[ki]) === String(o[key]));
-  const row = t.h.map((k, c) => o[k] !== undefined ? o[k] : (i >= 0 ? t.v[i][c] : ''));
-  if (i >= 0) t.s.getRange(i + 2, 1, 1, row.length).setValues([row]); else t.s.appendRow(row);
+function upsert(n, key, o, fix) { // أسرع: يقرأ العمود المفتاحي والصف المطلوب بس، ويرجّع الصف القديم
+  const s = sh(n), lc = s.getLastColumn(), lr = s.getLastRow();
+  const h = s.getRange(1, 1, 1, lc).getValues()[0], ki = h.indexOf(key);
+  let i = -1, cur = null;
+  if (lr > 1) { i = s.getRange(2, ki + 1, lr - 1, 1).getValues().findIndex(r => String(r[0]) === String(o[key])); if (i >= 0) cur = s.getRange(i + 2, 1, 1, lc).getValues()[0]; }
+  const old = cur ? Object.fromEntries(h.map((k, c) => [k, cur[c]])) : null;
+  if (fix) fix(old, o);
+  const row = h.map((k, c) => o[k] !== undefined ? o[k] : (cur ? cur[c] : ''));
+  if (i >= 0) s.getRange(i + 2, 1, 1, row.length).setValues([row]); else s.appendRow(row);
+  return old;
 }
+const bust = () => CacheService.getScriptCache().remove('pub'); // يمسح كاش صفحة الزوار بعد أي تعديل
 function log(user, action, offerId, data) { sh('Log').appendRow([now(), user, action, offerId || '', JSON.stringify(data || '')]); }
 function hash(p, s) { return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, s + p).map(b => ('0' + (b & 255).toString(16)).slice(-2)).join(''); }
 function addUserRow(username, name, role, pass) {
@@ -52,10 +58,17 @@ function addUserRow(username, name, role, pass) {
 const out = o => ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
 
 // ---------- الدخول ----------
+function userOf(u) { // كاش 5 دقايق عشان ما نقراش شيت المستخدمين في كل طلب
+  const c = CacheService.getScriptCache(), k = 'u_' + u, j = c.get(k);
+  if (j) return JSON.parse(j);
+  const x = rows('Users').find(x => x.username === u && x.active === true);
+  if (!x) return null;
+  const r = { username: x.username, name: x.name, role: x.role }; c.put(k, JSON.stringify(r), 300); return r;
+}
 function auth(token, ownerOnly, anyRole) {
   const u = token && CacheService.getScriptCache().get('s_' + token);
   if (!u) throw new Error('سجّل الدخول من جديد');
-  const user = rows('Users').find(x => x.username === u && x.active === true);
+  const user = userOf(u);
   if (!user) throw new Error('الحساب موقوف');
   if (!anyRole && user.role === 'visitor') throw new Error('غير مسموح');
   if (ownerOnly && user.role !== 'owner') throw new Error('الصلاحية للمدير الرئيسي فقط');
@@ -67,14 +80,18 @@ function login(u, p) {
   const user = rows('Users').find(x => String(x.username).toLowerCase() === u.toLowerCase() && x.active === true);
   if (!user || user.hash !== hash(p, user.salt)) { c.put(k, String(Number(c.get(k) || 0) + 1), 600); throw new Error('بيانات الدخول غلط'); }
   const token = Utilities.getUuid() + Utilities.getUuid();
-  c.put('s_' + token, u, 21600);
+  c.put('s_' + token, user.username, 21600);
   return { token, name: user.name, role: user.role };
 }
 
 // ---------- الواجهة العامة ----------
 function doGet() {
-  const pub = rows('Offers').filter(o => o.status === 'active').map(o => { delete o.updatedBy; return o; });
-  return out({ offers: pub });
+  const c = CacheService.getScriptCache(); let j = c.get('pub');
+  if (!j) {
+    j = JSON.stringify({ offers: rows('Offers').filter(o => o.status === 'active').map(o => { delete o.updatedBy; return o; }) });
+    try { c.put('pub', j, 120); } catch (x) {}
+  }
+  return ContentService.createTextOutput(j).setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
@@ -112,17 +129,33 @@ function doPost(e) {
       }
       case 'allOffers': auth(d.token); return out({ offers: rows('Offers') });
       case 'saveOffer': {
-        const u = auth(d.token), o = d.offer, old = o.id ? rows('Offers').find(x => x.id === o.id) : null;
+        const u = auth(d.token), o = d.offer;
         if (!String(o.title || '').trim()) throw new Error('اكتب عنوان العرض');
         o.id = o.id || Utilities.getUuid(); o.updatedBy = u.username; o.updatedAt = now();
-        if (u.role !== 'owner' && old) o.status = old.status; // الموظف ما يغيّرش الإخفاء
-        if (u.role !== 'owner' && !old) o.status = 'active';
-        upsert('Offers', 'id', o); log(u.username, old ? 'edit' : 'add', o.id, { before: old, after: o });
-        return out({ ok: true });
+        const old = upsert('Offers', 'id', o, (old, n) => { if (u.role !== 'owner') n.status = old ? old.status : 'active'; }); // الموظف ما يغيّرش الإخفاء
+        bust(); log(u.username, old ? 'edit' : 'add', o.id, { before: old, after: o });
+        return out({ ok: true, id: o.id });
+      }
+      case 'patchOffers': { // تعديل/إخفاء عدة عروض دفعة واحدة (قراءة وكتابة واحدة بس)
+        const u = auth(d.token), items = (d.items || []).slice(0, 60), OK = ['title', 'category', 'priceFrom', 'price', 'details', 'hotel', 'stars', 'city', 'airline', 'duration', 'image', 'status'];
+        if (items.some(it => it.status !== undefined) && u.role !== 'owner') throw new Error('الصلاحية للمدير الرئيسي فقط');
+        const lock = LockService.getScriptLock(); lock.waitLock(15000);
+        try {
+          const t = table('Offers'), ix = k => t.h.indexOf(k), pos = {}; let n = 0;
+          t.v.forEach((r, i) => pos[String(r[ix('id')])] = i);
+          items.forEach(it => {
+            const i = pos[String(it.id)]; if (i === undefined) return;
+            OK.forEach(k => { if (it[k] === undefined) return; if (k === 'status' && it[k] !== 'active' && it[k] !== 'hidden') return; t.v[i][ix(k)] = it[k]; });
+            t.v[i][ix('updatedBy')] = u.username; t.v[i][ix('updatedAt')] = now(); n++;
+          });
+          if (n) t.s.getRange(2, 1, t.v.length, t.h.length).setValues(t.v);
+          bust(); log(u.username, 'patch', '', JSON.stringify(items).slice(0, 4000));
+          return out({ ok: true, n });
+        } finally { lock.releaseLock(); }
       }
       case 'setStatus': {
         const u = auth(d.token, true);
-        upsert('Offers', 'id', { id: d.id, status: d.status, updatedBy: u.username, updatedAt: now() });
+        upsert('Offers', 'id', { id: d.id, status: d.status, updatedBy: u.username, updatedAt: now() }); bust();
         log(u.username, d.status === 'active' ? 'show' : 'hide', d.id); return out({ ok: true });
       }
       case 'leads': auth(d.token); return out({ leads: rows('Leads').reverse() });
@@ -137,7 +170,7 @@ function doPost(e) {
       case 'setActive': {
         const u = auth(d.token, true);
         if (d.username === u.username) throw new Error('مينفعش توقف حسابك');
-        upsert('Users', 'username', { username: d.username, active: !!d.active }); log(u.username, 'setActive', '', d); return out({ ok: true });
+        upsert('Users', 'username', { username: d.username, active: !!d.active }); CacheService.getScriptCache().remove('u_' + d.username); log(u.username, 'setActive', '', d); return out({ ok: true });
       }
       default: throw new Error('طلب غير معروف');
     }
@@ -179,4 +212,5 @@ function octoberOffers() {
     if (ex[o.title]) upsert('Offers', 'id', Object.assign({ id: ex[o.title], updatedBy: 'seed', updatedAt: now() }, o)); // يحدّث العرض الموجود (التفاصيل والصورة) من غير ما يغيّر الإخفاء
     else upsert('Offers', 'id', Object.assign({ id: Utilities.getUuid(), hotel: '', stars: '', city: 'مكة والمدينة', status: 'active', updatedBy: 'seed', updatedAt: now() }, o));
   });
+  bust();
 }
