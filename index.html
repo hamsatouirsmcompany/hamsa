@@ -209,7 +209,10 @@ window.editOffer = i => {
   $('#dform').onsubmit = async e => {
     e.preventDefault(); const d = Object.fromEntries(new FormData(e.target)); d.id = o.id; d.status = o.status; d.priceFrom = +d.priceFrom || 0; d.stars = d.stars ? +d.stars : '';
     if (d.image && !/^(https:\/\/|images\/)/.test(d.image)) { $('#dmsg').hidden = false; $('#dmsg').textContent = 'رابط الصورة لازم يبدأ بـ https:// أو images/'; return; }
-    try { await api('saveOffer', { offer: d }); dlg.close(); aTab('offers'); load(); } catch (x) { $('#dmsg').hidden = false; $('#dmsg').textContent = x.message; }
+    const m = $('#dmsg'), b = e.target.querySelector('button[value=x]');
+    m.hidden = false; m.className = 'msg ok'; m.textContent = '⏳ جاري تنفيذ التعديل...'; b.disabled = true;
+    try { await api('saveOffer', { offer: d }); m.textContent = '✓ تم التعديل'; await new Promise(r => setTimeout(r, 700)); dlg.close(); aTab('offers'); load(); }
+    catch (x) { m.className = 'msg er'; m.textContent = x.message; b.disabled = false; }
   };
   dlg.showModal();
 };
