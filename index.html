@@ -271,10 +271,41 @@ html{scroll-padding-top:92px}
 #glb .gp{inset-inline-start:10px}#glb .gnx{inset-inline-end:10px}
 #glb .gn:active{transform:translateY(-50%) scale(.94)}
 @media(max-width:640px){#glb .gn{top:auto;bottom:max(14px,env(safe-area-inset-bottom));transform:none}#glb .gn:active{transform:scale(.94)}#glb figure{padding-bottom:76px}#glb img{max-height:calc(100dvh - 190px)}}
+
+/* ===== فنادقنا ===== */
+#hotels{margin-top:28px}
+#hotels .gsub{margin:-6px 0 6px;color:var(--mute)}
+.hgrp{margin:20px 0 6px}
+.hgh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px}
+.hgh .st{color:var(--gd);font-size:1.2rem;letter-spacing:2px;line-height:1}
+.hgh h3{margin:0;font-size:1.1rem;color:var(--hd)}
+.hgh .ds{background:var(--tint);border:1px solid var(--line);border-radius:50px;padding:2px 12px;font-size:.88rem;font-weight:700;color:var(--hd)}
+.hl{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(250px,100%),1fr));gap:12px}
+.hc{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 4px 16px #d49b0018;transition:transform .25s ease,box-shadow .25s ease,opacity .6s ease}
+@media(hover:hover){.hc:hover{transform:translateY(-4px);box-shadow:0 8px 24px #d49b0030}}
+.hph{position:relative;aspect-ratio:16/10;background:linear-gradient(135deg,#fff1c2,#fffaf0);display:grid;place-items:center}
+.hph.no{aspect-ratio:16/6}
+.hph.no .hsb{display:none}
+.hph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hph svg{width:54px;height:54px;color:var(--gd);opacity:.55}
+.hsb{position:absolute;top:8px;inset-inline-start:8px;background:#fff;border:1px solid var(--line);border-radius:50px;padding:0 10px;color:var(--gd);font-size:.85rem;font-weight:700;line-height:1.7;box-shadow:0 2px 6px #0002}
+.hb2{padding:12px 14px 14px;display:grid;gap:3px;flex:1;align-content:start}
+.hb2 h4{margin:0;font-size:1.05rem;color:var(--hd)}
+.hb2 .hw{color:var(--mute);font-size:.9rem}
+.hb2 .btn{display:block;text-align:center;margin-top:8px}
+
+@media(max-width:640px){
+  html{scroll-padding-top:84px}
+  header{gap:6px;padding-block:6px}
+  header>span{gap:6px;flex-wrap:wrap;min-width:0}
+  header>a:first-child{flex:none}
+  header button{padding:6px 9px;font-size:.84rem;min-height:38px;white-space:nowrap}
+  header>a:first-child img{height:42px!important}
+}
 </style>
 </head>
 <body>
-<header><a href="#" aria-label="همسة للسياحة"><img src="images/logo-header.webp" width="164" height="120" alt="همسة للسياحة" style="height:60px;display:block;width:auto"></a><span><button id="galBtn" type="button">لحظاتنا</button> <button id="adminBtn" hidden>لوحة التحكم</button> <button id="loginBtn">تسجيل الدخول</button></span></header>
+<header><a href="#" aria-label="همسة للسياحة"><img src="images/logo-header.webp" width="164" height="120" alt="همسة للسياحة" style="height:60px;display:block;width:auto"></a><span><button id="hotBtn" type="button">فنادقنا</button> <button id="galBtn" type="button">لحظاتنا</button> <button id="adminBtn" hidden>لوحة التحكم</button> <button id="loginBtn">تسجيل الدخول</button></span></header>
 <div class="hero2" id="hero2"><div class="stage">
 <div class="bgm"><video muted loop playsinline preload="none" poster="images/kaaba-day.webp" data-src="images/hero.mp4" aria-hidden="true"></video></div><div class="shade"></div>
 <div class="layer l1"><h1 class="big"><span class="sc"><span class="mask"><span class="in">همسة</span></span></span><span class="sub">للسياحة · الحج والعمرة</span></h1></div>
@@ -294,6 +325,7 @@ html{scroll-padding-top:92px}
 <select id="city" aria-label="المدينة"><option value="">مكة والمدينة</option><option>مكة</option><option>المدينة</option></select></div>
 <div id="info"></div><div class="grid" id="list"><p class="empty">جاري تحميل العروض...</p></div></section>
 
+<section id="hotels" aria-labelledby="ht"><h2 id="ht">فنادقنا</h2><p class="gsub">فنادق مختارة قريبة من الحرم المكي، تختار منها على حسب فئتك وميزانيتك</p><div id="hg"></div></section>
 <section id="gallery" aria-labelledby="gt"><h2 id="gt">لحظاتنا مع ضيوف الرحمن</h2><p class="gsub">صور حقيقية من رحلات ضيوفنا مع همسة للسياحة</p><div class="tabs" id="gtabs" role="tablist"></div><div class="gg" id="gg"></div></section>
 <section id="contact"><h2>سجّل اهتمامك وهنكلمك</h2>
 <form class="f" id="lead">
@@ -580,7 +612,7 @@ ui(); load().then(loadFavs); if (me && me.role === 'owner' && location.hash === 
 // ظهور تدريجي للعناصر وقت السكرول (مفيش تثبيت للصفحة)
 (()=>{if(matchMedia('(prefers-reduced-motion:reduce)').matches||!('IntersectionObserver' in window))return;
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12,rootMargin:'0px 0px -40px 0px'});
-const sel='.fc,.ty,.gi,#contact h2,#contact form,#gallery h2';
+const sel='.fc,.ty,.gi,.hc,#contact h2,#contact form,#gallery h2,#hotels h2';
 function scan(){document.querySelectorAll(sel).forEach((el,i)=>{if(el.dataset.rv)return;el.dataset.rv=1;el.classList.add('rv');el.style.transitionDelay=(i%3)*80+'ms';io.observe(el)})}
 let _sq;scan();new MutationObserver(()=>{cancelAnimationFrame(_sq);_sq=requestAnimationFrame(scan)}).observe(document.getElementById('site'),{childList:true,subtree:true});})();
 </script>
@@ -641,6 +673,26 @@ const GPH = [
   dlg.addEventListener('touchend', ev => { if (x0 === null) return; const dx = ev.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 50) open(dx < 0 ? idx + 1 : idx - 1); });
   $('#galBtn').onclick = () => { if (!$('#admin').hidden) showAdmin(false); $('#gallery').scrollIntoView({ behavior: 'smooth' }); };
   tabs(); show();
+})();
+</script>
+<script>
+// ===== فنادقنا =====
+// عشان تضيف صورة لفندق: حط الصورة في images/hotels وضيف  i: 'images/hotels/اسم.webp'  في سطر الفندق. من غير صورة بتظهر أيقونة.
+const HOTELS = [
+  { s: 5, d: 'في برج الساعة', items: [{ n: 'الشهداء' }, { n: 'الصفوة' }, { n: 'موفنبيك' }] },
+  { s: 4, d: 'ضهر برج الساعة', items: [{ n: 'الماسة جراند' }, { n: 'رمادا دار الفايزين' }, { n: 'العليان أجياد', w: 'شارع أجياد' }] },
+  { s: 3, d: 'حوالي 600 متر من الحرم', items: [{ n: 'أعمار آفاق', w: 'شارع أجياد' }, { n: 'واحة الضيافة', w: 'شارع أجياد' }] },
+  { s: 3, d: 'حوالي 1 كم من الحرم', items: [{ n: 'قصر العليان', w: 'شارع أجياد' }, { n: 'أبراج الكسوة', w: 'شارع أجياد' }, { n: 'أبراج القصواء', w: 'شارع أجياد' }, { n: 'سرايا الجوار', w: 'محبس الجن' }] }
+];
+(() => {
+  const $ = s => document.querySelector(s), e = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const ico = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16"/><path d="M15 9h4a1 1 0 0 1 1 1v11"/><path d="M3 21h18"/><path d="M8 8h3M8 12h3M8 16h3"/></svg>';
+  $('#hg').innerHTML = HOTELS.map(g => {
+    const st = '★'.repeat(g.s);
+    return `<div class="hgrp"><div class="hgh"><span class="st" aria-label="${g.s} نجوم">${st}</span><h3>${g.s} نجوم</h3><span class="ds">${e(g.d)}</span></div><div class="hl">` + g.items.map(h =>
+      `<article class="hc"><div class="hph${h.i ? '' : ' no'}">${h.i ? `<img loading="lazy" decoding="async" alt="${e(h.n)}" src="${e(h.i)}">` : ico}<span class="hsb">${st}</span></div><div class="hb2"><h4>${e(h.n)}</h4><span class="hw">${h.w ? e(h.w) + ' · ' : ''}${e(g.d)}</span><a class="btn o" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent('استفسار عن فندق ' + h.n + ' (' + g.s + ' نجوم)')}">اسأل عن الفندق</a></div></article>`).join('') + '</div></div>';
+  }).join('');
+  $('#hotBtn').onclick = () => { if (!$('#admin').hidden) showAdmin(false); $('#hotels').scrollIntoView({ behavior: 'smooth' }); };
 })();
 </script>
 </body>
