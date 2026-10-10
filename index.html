@@ -6,7 +6,16 @@
 <meta name="theme-color" content="#ffffff">
 <title>همسة للسياحة | الحج والعمرة</title>
 <meta name="description" content="برامج الحج والعمرة من همسة للسياحة: عمرة الكاش، عمرة التيسير، الحج الميسر والسياحي.">
-<link rel="icon" href="images/logo.png">
+<link rel="icon" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://script.google.com">
+<link rel="dns-prefetch" href="https://script.googleusercontent.com">
+<script>
+// نبدأ تحميل العروض فورًا (قبل ما باقي الصفحة تخلص) — رابط الـ API في مكان واحد بس
+window.__API='https://script.google.com/macros/s/AKfycbxRr2PYw2kkY9TiAGVT0MfswIBsxYPtrVuRBvXjzrOTVdr7ueGHOSLjHkUEZkshPmEOFg/exec';
+window.__op=fetch(window.__API+'?action=offers').then(function(r){return r.json()}).catch(function(){return null});
+</script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:light;--bg:#ffffff;--card:#ffffff;--ink:#1a2540;--mute:#5d667c;--hd:#14295f;--g:#24448f;--g2:#24448f;--gold:#8a6700;--gd:#d49b00;--y:#f5c50f;--line:#f0e3b3;--tint:#fff8dc;--err:#b3261e}
@@ -149,7 +158,7 @@ dialog{max-height:92vh;max-height:92dvh;overflow:auto;overscroll-behavior:contai
 @keyframes pop{from{opacity:0;transform:scale(.9)}}
 @keyframes kb{to{transform:scale(1.12)}}
 @keyframes pulse{0%{box-shadow:0 0 0 0 #1f9d5588}100%{box-shadow:0 0 0 16px #1f9d5500}}
-.hero2 .bgm{animation:kb 22s ease-in-out infinite alternate}
+
 .hero2 .kick{animation:up .8s .5s both}
 .hero2 .tl span{animation:up .7s both;animation-delay:calc(.7s + var(--i)*.11s)}
 .hero2 .pp{animation:up .8s 1.5s both}
@@ -161,7 +170,7 @@ header{animation:up .6s both}
 @media(hover:hover){.fc:hover{transform:translateY(-5px)}.gal img{transition:transform .4s ease}.gal img:hover{transform:scale(1.04)}}
 button:active,.btn:active{transform:scale(.96)}
 button,.btn{transition:transform .15s ease,filter .2s ease,background .2s ease}
-.wa{animation:pulse 2.4s 2s infinite}
+.wa{animation:pulse 2.4s 2s 3}
 dialog[open]{animation:pop .25s ease both}
 dialog[open]::backdrop{animation:fade .25s both}
 @keyframes fade{from{opacity:0}}
@@ -241,9 +250,9 @@ footer{background:var(--tint);border-top:3px solid var(--y);color:var(--mute)}
 </style>
 </head>
 <body>
-<header><a href="#" aria-label="همسة للسياحة"><img src="images/logo.png" alt="همسة للسياحة" style="height:60px;display:block;width:auto"></a><span><button id="adminBtn" hidden>لوحة التحكم</button> <button id="loginBtn">تسجيل الدخول</button></span></header>
+<header><a href="#" aria-label="همسة للسياحة"><img src="images/logo-header.webp" width="164" height="120" alt="همسة للسياحة" style="height:60px;display:block;width:auto"></a><span><button id="adminBtn" hidden>لوحة التحكم</button> <button id="loginBtn">تسجيل الدخول</button></span></header>
 <div class="hero2" id="hero2"><div class="stage">
-<div class="bgm"><video autoplay muted loop playsinline preload="none" poster="images/kaaba-day.webp" src="images/hero.mp4" aria-hidden="true"></video></div><div class="shade"></div>
+<div class="bgm"><video muted loop playsinline preload="none" poster="images/kaaba-day.webp" data-src="images/hero.mp4" aria-hidden="true"></video></div><div class="shade"></div>
 <div class="layer l1"><h1 class="big"><span class="sc"><span class="mask"><span class="in">همسة</span></span></span><span class="sub">للسياحة · الحج والعمرة</span></h1></div>
 <div class="layer l2"><span class="kick">رسالتنا ليك</span>
 <h2 class="tl"><span style="--i:0">نسهّل</span> <span style="--i:1">عليك</span> <span style="--i:2">الطريق</span> <span class="y" style="--i:3">لبيت</span> <span class="y" style="--i:4">الله</span> <span class="y" style="--i:5">الحرام</span></h2>
@@ -261,7 +270,7 @@ footer{background:var(--tint);border-top:3px solid var(--y);color:var(--mute)}
 <select id="city" aria-label="المدينة"><option value="">مكة والمدينة</option><option>مكة</option><option>المدينة</option></select></div>
 <div id="info"></div><div class="grid" id="list"><p class="empty">جاري تحميل العروض...</p></div></section>
 
-<section id="gallery"><h2>من رحلات الحج والعمرة</h2><div class="gal"><img loading="lazy" alt="" src="images/kaaba-aerial.webp"><img loading="lazy" alt="" src="images/nabawi-minarets.webp"><img loading="lazy" alt="" src="images/haram-crowd.webp"><img loading="lazy" alt="" src="images/madinah-sunset.webp"><img loading="lazy" alt="" src="images/kaaba-sky.webp"><img loading="lazy" alt="" src="images/nabawi-towers.webp"><img loading="lazy" alt="" src="images/hajar-aswad.webp"><img loading="lazy" alt="" src="images/madinah-lamp.webp"></div></section>
+<section id="gallery"><h2>من رحلات الحج والعمرة</h2><div class="gal"><img loading="lazy" decoding="async" alt="" src="images/kaaba-aerial.webp"><img loading="lazy" decoding="async" alt="" src="images/nabawi-minarets.webp"><img loading="lazy" decoding="async" alt="" src="images/haram-crowd.webp"><img loading="lazy" decoding="async" alt="" src="images/madinah-sunset.webp"><img loading="lazy" decoding="async" alt="" src="images/kaaba-sky.webp"><img loading="lazy" decoding="async" alt="" src="images/nabawi-towers.webp"><img loading="lazy" decoding="async" alt="" src="images/hajar-aswad.webp"><img loading="lazy" decoding="async" alt="" src="images/madinah-lamp.webp"></div></section>
 <section id="contact"><h2>سجّل اهتمامك وهنكلمك</h2>
 <form class="f" id="lead">
 <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -305,7 +314,7 @@ footer{background:var(--tint);border-top:3px solid var(--y);color:var(--mute)}
 
 <script>
 // ضع هنا رابط الـ Web app بعد ما تنشره من Apps Script
-const API = 'https://script.google.com/macros/s/AKfycbxRr2PYw2kkY9TiAGVT0MfswIBsxYPtrVuRBvXjzrOTVdr7ueGHOSLjHkUEZkshPmEOFg/exec';
+const API = window.__API;
 const WA = '201096177756';
 const CATS = { cash: 'عمرة الكاش', tayseer: 'عمرة التيسير', hajj: 'الحج' };
 const $ = s => document.querySelector(s);
@@ -323,16 +332,24 @@ function safeImg(u) { return /^(https:\/\/|images\/)/.test(u) ? u : ''; }
 function pic(o) { if (safeImg(o.image)) return o.image; const a = PIC[o.category] || PIC.cash; let h = 0; for (const c of String(o.title)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return 'images/' + a[h % a.length] + '.webp'; }
 
 // ----- العروض للزوار -----
-async function load() {
-  try { offers = (await (await fetch(API + '?action=offers')).json()).offers || []; }
-  catch (e) { $('#list').innerHTML = '<p class="empty">تعذّر تحميل العروض. تواصل معنا على واتساب.</p>'; return; }
+function paintPublic() {
   $('#tabs').innerHTML = Object.entries(CATS).map(([k, v]) => `<button data-c="${k}" class="${k === cat ? 'on' : ''}">${v}</button>`).join('');
   $('#svc').innerHTML = '<option value="">اختر العرض</option>' + offers.map(o => `<option>${esc(o.title)}</option>`).join('');
   render();
 }
+async function load() {
+  let cached = null; try { cached = JSON.parse(localStorage.getItem('hm_offers') || 'null'); } catch (e) {}
+  if (cached && cached.length) { offers = cached; paintPublic(); } // عرض فوري من آخر زيارة
+  let j = null;
+  try { j = await (window.__op || fetch(API + '?action=offers').then(r => r.json())); } catch (e) {}
+  window.__op = null;
+  if (j && j.offers) { offers = j.offers; try { localStorage.setItem('hm_offers', JSON.stringify(offers)); } catch (e) {} }
+  else if (!offers.length) { $('#list').innerHTML = '<p class="empty">تعذّر تحميل العروض. تواصل معنا على واتساب.</p>'; return; }
+  paintPublic();
+}
 const ROOM = /^(الرباعي|رباعي|الثلاثي|ثلاثي|الثنائي|ثنائي|السينجل|سينجل|الطفل|طفل|الرضيع|رضيع)\s*[:：]\s*([\d,]+)/;
 function parse(o) { const pr = [], rest = []; String(o.details || '').split('\n').forEach(l => { l = l.trim(); const m = l.match(ROOM); if (m) pr.push([m[1].replace(/^ال/, ''), m[2]]); else if (l) rest.push(l); }); return { pr, rest }; }
-const card = o => { const { pr, rest } = parse(o); return `<article class="fc"><div class="fh${safeImg(o.image) ? ' im' : ''}"><img loading="lazy" alt="${esc(o.title)}" data-zoom="1" src="${esc(pic(o))}">${o.duration ? `<span class="bd">${esc(o.duration)}</span>` : ''}</div><div class="fb">
+const card = o => { const { pr, rest } = parse(o); return `<article class="fc"><div class="fh${safeImg(o.image) ? ' im' : ''}"><img loading="lazy" decoding="async" alt="${esc(o.title)}" data-zoom="1" src="${esc(pic(o))}">${o.duration ? `<span class="bd">${esc(o.duration)}</span>` : ''}</div><div class="fb">
 <h3>${esc(o.title)}</h3><div class="meta">${[o.hotel, o.stars ? '★'.repeat(o.stars) : '', o.airline].filter(Boolean).map(esc).join(' · ')}</div>
 <ul>${rest.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
 ${pr.length ? `<div class="pg">${pr.map(x => `<i>${esc(x[0])}<b>${esc(x[1])}</b>جنيه</i>`).join('')}</div>` : `<div class="price">${esc(o.price)}</div>`}
@@ -346,7 +363,8 @@ function render() {
   $('#list').innerHTML = l.length ? l.map(card).join('') : '<p class="empty">مفيش عروض بالشكل ده دلوقتي. جرّب تغيّر الفلاتر أو كلّمنا على واتساب.</p>';
 }
 $('#tabs').onclick = e => { if (e.target.dataset.c) { cat = e.target.dataset.c; render(); } };
-['#q', '#maxp', '#stars', '#city'].forEach(s => $(s).oninput = render);
+let _rt; const _dr = () => { clearTimeout(_rt); _rt = setTimeout(render, 150); };
+['#q', '#maxp'].forEach(s => $(s).oninput = _dr); ['#stars', '#city'].forEach(s => $(s).oninput = render);
 $('#list').onclick = e => { if (e.target.dataset.zoom && e.target.closest('.im')) { $('#idlg img').src = e.target.src; return idlg.showModal(); } const bk = e.target.dataset.book; if (bk) return openBook(bk); const f = e.target.dataset.fav; if (f) return toggleFav(f); const t = e.target.dataset.ask; if (t) { $('#svc').value = t; $('#contact').scrollIntoView(); $('[name=name]').focus(); } };
 
 $('#lead').onsubmit = async e => {
@@ -532,7 +550,13 @@ ui(); load().then(loadFavs); if (me && me.role === 'owner' && location.hash === 
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12,rootMargin:'0px 0px -40px 0px'});
 const sel='.fc,.ty,.gal img,#contact h2,#contact form,#gallery h2';
 function scan(){document.querySelectorAll(sel).forEach((el,i)=>{if(el.dataset.rv)return;el.dataset.rv=1;el.classList.add('rv');el.style.transitionDelay=(i%3)*80+'ms';io.observe(el)})}
-scan();new MutationObserver(scan).observe(document.getElementById('site'),{childList:true,subtree:true});})();
+let _sq;scan();new MutationObserver(()=>{cancelAnimationFrame(_sq);_sq=requestAnimationFrame(scan)}).observe(document.getElementById('site'),{childList:true,subtree:true});})();
+</script>
+<script>
+// فيديو الخلفية: يتحمّل بعد ما الصفحة تفتح، وبس على الشاشات الكبيرة والنت السريع
+addEventListener('load',()=>{const v=document.querySelector('.hero2 video');if(!v)return;const c=navigator.connection||{};
+if(c.saveData||/^(slow-2g|2g|3g)$/.test(c.effectiveType||'')||matchMedia('(max-width:900px),(prefers-reduced-motion:reduce)').matches){v.remove();return}
+(window.requestIdleCallback||setTimeout)(()=>{v.src=v.dataset.src;v.play().catch(()=>{})})});
 </script>
 </body>
 </html>
