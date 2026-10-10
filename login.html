@@ -80,7 +80,7 @@ const $ = s => document.querySelector(s);
 let reg = false;
 
 // لو داخل بالفعل، حوّله على طول
-try { const m = JSON.parse(sessionStorage.getItem('me') || 'null'); if (m && sessionStorage.getItem('t')) location.replace(m.role === 'visitor' ? 'index.html' : 'index.html#admin'); } catch (e) {}
+try { const m = JSON.parse(sessionStorage.getItem('me') || 'null'); if (m && sessionStorage.getItem('t')) location.replace(m.role === 'owner' ? 'index.html#admin' : 'index.html'); } catch (e) {}
 
 function mode(r) {
   reg = r;
@@ -112,7 +112,7 @@ $('#f').onsubmit = async e => {
     const r = await call('login', { u: f.u, p: f.p });
     sessionStorage.setItem('t', r.token);
     sessionStorage.setItem('me', JSON.stringify({ name: r.name, role: r.role }));
-    location.replace(r.role === 'visitor' ? 'index.html' : 'index.html#admin');
+    location.replace(r.role === 'owner' ? 'index.html#admin' : 'index.html');
   } catch (x) {
     err.hidden = false;
     err.textContent = /fetch|NetworkError|JSON|Failed/i.test(x.message) ? 'مشكلة في الاتصال. جرّب تاني.' : x.message;
