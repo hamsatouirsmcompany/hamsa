@@ -2,7 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b2f47">
 <title>همسة للسياحة | الحج والعمرة</title>
 <meta name="description" content="برامج الحج والعمرة من همسة للسياحة: عمرة الكاش، عمرة التيسير، الحج الميسر والسياحي.">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
@@ -93,6 +94,53 @@ fieldset.rm{border:1px solid var(--line);border-radius:10px;padding:8px 10px;mar
 @keyframes h2cue{0%{transform:scaleY(0)}50%{transform:scaleY(1)}100%{transform:scaleY(1);opacity:0}}
 @keyframes h2tk{to{transform:translateX(-50%)}}
 @media(prefers-reduced-motion:reduce){.hero2 *{animation:none!important}.hero2 video{display:none}}
+
+/* ===== Responsive: موبايل + كمبيوتر ===== */
+html{-webkit-text-size-adjust:100%}
+img,video{max-width:100%}
+header{padding-inline:max(5vw,env(safe-area-inset-left));padding-top:max(10px,env(safe-area-inset-top));gap:8px}
+header>span{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+main{padding-inline:max(5vw,env(safe-area-inset-left))}
+footer{padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+.grid{grid-template-columns:repeat(auto-fill,minmax(min(290px,100%),1fr))}
+form.f{grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr))}
+.gal{grid-template-columns:repeat(auto-fill,minmax(min(200px,45%),1fr))}
+button,.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+input,select,textarea{font-size:16px}
+dialog{max-height:92vh;max-height:92dvh;overflow:auto;overscroll-behavior:contain}
+.wa{bottom:max(16px,env(safe-area-inset-bottom));inset-inline-start:max(16px,env(safe-area-inset-left));box-shadow:0 4px 14px #0004}
+#toast{bottom:calc(80px + env(safe-area-inset-bottom));max-width:92vw;text-align:center}
+.bulk{top:64px}
+@media(hover:hover){button:not(:disabled):hover,.btn:hover{filter:brightness(1.1)}.card:hover,.fc:hover{box-shadow:0 8px 24px #0b2f4726}}
+@media(pointer:coarse){button,.btn,select,input:not([type=checkbox]):not([type=radio]){min-height:44px}.tabs button{padding-inline:18px}}
+@media(max-width:640px){
+  header b{font-size:1.05rem}
+  header img{height:36px!important}
+  header button{padding:8px 12px;font-size:.9rem}
+  main{padding-block:16px}
+  h2{font-size:1.25rem}
+  .tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-5vw;padding-inline:5vw}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs button{white-space:nowrap;flex:0 0 auto}
+  .filters input,.filters select,.tb input,.tb select{flex:1 1 100%}
+  .g2,.g3{grid-template-columns:1fr}
+  .g3{grid-template-columns:1fr 1fr}
+  .fh{height:170px}
+  .fb .row{flex-wrap:wrap}.fb .row .bk{flex:1 1 100%}
+  .fb .row .btn,.fb .row .o{flex:1}
+  dialog{width:96vw;padding:14px}
+  #idlg{padding:0}
+  .ty{padding:12px}.ty h3{font-size:1.1rem}
+  table{font-size:.85rem}
+  .bulk{top:58px}
+  .hero2.js{height:300vh}
+  .hero2 .layer{padding-inline:6vw}
+  .hero2 .tk{bottom:max(14px,env(safe-area-inset-bottom))}
+  .hero2.js .cue{bottom:64px}
+}
+@media(max-width:360px){.pg{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr}}
+@media(max-height:480px) and (orientation:landscape){.hero2.js{height:420vh}.hero2 .in{font-size:clamp(4rem,28vh,9rem)}.hero2 .tl{font-size:clamp(1.6rem,9vh,3rem)}.hero2 .cue{display:none!important}}
+@media(min-width:1200px){main{max-width:1180px}.hero2 .pp{font-size:1.15rem}}
 </style>
 </head>
 <body>
@@ -111,7 +159,7 @@ fieldset.rm{border:1px solid var(--line);border-radius:10px;padding:8px 10px;mar
 <main id="site">
 <section id="offers" style="margin-top:0"><div class="tabs" id="tabs"></div>
 <div class="filters"><input id="q" placeholder="ابحث في العروض" aria-label="بحث">
-<input id="maxp" type="number" min="0" placeholder="أقصى سعر (ج.م)" aria-label="أقصى سعر">
+<input id="maxp" type="number" min="0" inputmode="numeric" placeholder="أقصى سعر (ج.م)" aria-label="أقصى سعر">
 <select id="stars" aria-label="النجوم"><option value="">كل التصنيفات</option><option>5</option><option>4</option><option>3</option></select>
 <select id="city" aria-label="المدينة"><option value="">مكة والمدينة</option><option>مكة</option><option>المدينة</option></select></div>
 <div id="info"></div><div class="grid" id="list"><p class="empty">جاري تحميل العروض...</p></div></section>
@@ -124,7 +172,7 @@ fieldset.rm{border:1px solid var(--line);border-radius:10px;padding:8px 10px;mar
 <label>رقم الموبايل *<input name="phone" type="tel" required inputmode="tel"></label>
 <label>المحافظة<input name="governorate"></label>
 <label>العرض المطلوب<select name="service" id="svc"><option value="">اختر العرض</option></select></label>
-<label>عدد الأشخاص<input name="people" type="number" min="1"></label>
+<label>عدد الأشخاص<input name="people" type="number" min="1" inputmode="numeric"></label>
 <label>موعد السفر المتوقع<input name="travelDate"></label>
 <label>طريقة الدفع<select name="payment"><option value="">اختر</option><option>كاش</option><option>تقسيط</option><option>لم أحدد بعد</option></select></label>
 <label class="w">ملاحظات<textarea name="notes" rows="2" maxlength="300"></textarea></label>
@@ -144,7 +192,7 @@ fieldset.rm{border:1px solid var(--line);border-radius:10px;padding:8px 10px;mar
 <label>رقم الموبايل *<input name="phone" type="tel" required inputmode="tel" autocomplete="tel"></label>
 <label>المحافظة<input name="governorate"></label>
 <label>نوع الحجز<select name="room" id="broom"></select></label>
-<label>عدد الأفراد<input name="n" type="number" min="1" value="1"></label>
+<label>عدد الأفراد<input name="n" type="number" min="1" value="1" inputmode="numeric"></label>
 <label>طريقة الدفع<select name="payment"><option>كاش</option><option>تقسيط</option><option>لم أحدد بعد</option></select></label>
 <label>ملاحظات<textarea name="notes" rows="2" maxlength="200"></textarea></label>
 <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -153,8 +201,8 @@ fieldset.rm{border:1px solid var(--line);border-radius:10px;padding:8px 10px;mar
 <dialog id="idlg"><button onclick="idlg.close()">إغلاق ✕</button><img alt=""></dialog>
 <dialog id="ldlg"><form id="lform" style="display:grid;gap:10px"><h2 id="ltitle">تسجيل الدخول</h2>
 <label id="lname" hidden>الاسم<input name="name" autocomplete="name"></label>
-<label><span id="luser">اسم المستخدم أو الإيميل</span><input name="u" required autocomplete="username"></label>
-<label>كلمة السر<input name="p" type="password" required autocomplete="current-password"></label>
+<label><span id="luser">اسم المستخدم أو الإيميل</span><input name="u" required autocomplete="username" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" dir="ltr" style="text-align:start"></label>
+<label>كلمة السر<input name="p" type="password" required autocomplete="current-password" autocapitalize="none" dir="ltr" style="text-align:start"></label>
 <div id="lmsg" class="er msg" hidden></div><div><button id="lgo">دخول</button> <button type="button" class="o" onclick="ldlg.close()">إلغاء</button></div>
 <a href="#" id="lsw" style="color:var(--g)">زائر جديد؟ أنشئ حساب</a></form></dialog>
 
