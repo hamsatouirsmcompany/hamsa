@@ -166,6 +166,32 @@ dialog[open]{animation:pop .25s ease both}
 dialog[open]::backdrop{animation:fade .25s both}
 @keyframes fade{from{opacity:0}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+
+/* ===== صندوق عمرة التيسير ===== */
+.ty{padding:0;overflow:hidden;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 16px #0b2f4714}
+.ty .th{background:var(--hd);color:#fff;padding:20px 22px 18px;border-bottom:3px solid var(--y)}
+.ty .th h3{margin:0;font-size:1.5rem;color:var(--y)}
+.ty .th p{margin:2px 0 12px;font-size:1.05rem;color:#fff}
+.ty .tp{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.ty .tp li{background:#ffffff1c;border:1px solid #ffffff40;border-radius:50px;padding:2px 14px;font-size:.9rem}
+.ty .tp li:before{content:"✓";color:var(--y);font-weight:700;margin-inline-end:6px}
+.ty .tbd{padding:18px 22px 22px;display:grid;gap:16px}
+.ty .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:12px}
+.ty .pl{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:6px;text-align:center}
+.ty .pl small{color:var(--mute);font-size:.85rem}
+.ty .pl b{font-size:1.6rem;color:var(--g);line-height:1.2}
+.ty .am{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ty .am span{background:var(--hd);border:1px solid #fac80f55;color:var(--y);border-radius:8px;padding:6px 0;font-weight:700;font-size:1.1rem}
+.ty .sp{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:10px}
+.ty .sp li{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.ty .sp i{flex:none;width:30px;height:30px;border-radius:50%;background:var(--y);color:#0b2f47;display:grid;place-items:center;font-style:normal;font-weight:700}
+.ty .dr{display:flex;align-items:center;gap:12px;border:2px dashed var(--y);border-radius:12px;padding:10px 14px}
+.ty .dr>span{font-size:1.8rem;line-height:1}
+.ty .dr b{color:var(--g)}
+.ty .ex{background:#fac80f26;border-inline-start:4px solid var(--y);border-radius:8px;padding:10px 14px;font-size:.95rem}
+.ty .ex>b:first-child{display:block;color:var(--g);margin-bottom:2px}
+.ty .ex .n{color:var(--gold);white-space:nowrap}
+@media(max-width:640px){.ty .th{padding:16px}.ty .th h3{font-size:1.3rem}.ty .tbd{padding:14px 16px 18px}.ty .sp{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -265,7 +291,7 @@ const card = o => { const { pr, rest } = parse(o); return `<article class="fc"><
 <ul>${rest.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
 ${pr.length ? `<div class="pg">${pr.map(x => `<i>${esc(x[0])}<b>${esc(x[1])}</b>جنيه</i>`).join('')}</div>` : `<div class="price">${esc(o.price)}</div>`}
 <div class="row"><button class="bk" data-book="${esc(o.id)}">احجز الآن</button><button class="o" data-fav="${esc(o.id)}" aria-label="المفضلة" aria-pressed="${favs.has(o.id)}">${favs.has(o.id) ? '♥' : '♡'}</button><a class="btn o" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent('استفسار عن: ' + o.title)}">واتساب</a></div></div></article>`; };
-const TY = '<div class="ty"><h3>عمرة التيسير: بتطلع عمرة بنفس سعر الكاش</h3><div>من غير مقدم ولا فوايد ولا مصاريف إدارية. قسط لمدة 24 شهر يبدأ من 1000 / 1250 / 1500 جنيه، أو لمدة 12 شهر يبدأ من 2000 / 2500 / 3000 جنيه.</div><div class="st"><span>🎁 قرعة كل 3 شهور: 8 قرعات خلال 24 شهر و4 خلال 12 شهر</span><span>1️⃣ تختار الوقت اللي يناسبك</span><span>2️⃣ وتختار البرنامج</span><span>3️⃣ وتدفع الفرق بين أقساطك وسعر البرنامج</span></div><div class="ex">مثال: قسط 1500 × 24 شهر = 36,000 جنيه. لو البرنامج 40,000 تدفع الفرق 4,000 جنيه كاش وتسافر.</div></div>';
+const TY = '<div class="ty"><div class="th"><h3>عمرة التيسير</h3><p>بتطلع عمرة بنفس سعر الكاش</p><ul class="tp"><li>من غير مقدم</li><li>من غير فوايد</li><li>من غير مصاريف إدارية</li></ul></div><div class="tbd"><div class="plans"><div class="pl"><small>قسط لمدة</small><b>24 شهر</b><div class="am"><span>1000</span><span>1250</span><span>1500</span></div><small>جنيه في الشهر، يبدأ من</small></div><div class="pl"><small>قسط لمدة</small><b>12 شهر</b><div class="am"><span>2000</span><span>2500</span><span>3000</span></div><small>جنيه في الشهر، يبدأ من</small></div></div><ol class="sp"><li><i>1</i>تختار الوقت اللي يناسبك</li><li><i>2</i>تختار البرنامج</li><li><i>3</i>تدفع الفرق بين أقساطك وسعر البرنامج</li></ol><div class="dr"><span aria-hidden="true">🎁</span><div><b>قرعة كل 3 شهور</b><br>8 قرعات خلال 24 شهر، و4 قرعات خلال 12 شهر</div></div><div class="ex"><b>مثال</b>قسط 1500 × 24 شهر = <b class="n">36,000</b> جنيه. لو البرنامج 40,000 تدفع الفرق <b class="n">4,000</b> جنيه كاش وتسافر.</div></div></div>';
 function render() {
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.c === cat));
   const q = $('#q').value.trim(), mp = +$('#maxp').value, st = $('#stars').value, ct = $('#city').value;
