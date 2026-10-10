@@ -247,6 +247,7 @@ footer{background:var(--tint);border-top:3px solid var(--y);color:var(--mute)}
 .ty .sp li{background:#fff}
 .sw.on{color:#fff}
 .btn.wa,.wa{background:#1f9d55;border-color:#1f9d55;color:#fff}
+.dt{display:flex;align-items:center;gap:8px;width:fit-content;max-width:100%;background:var(--tint);border:1px solid var(--line);border-inline-start:4px solid var(--y);border-radius:10px;padding:4px 12px;font-weight:700;color:var(--hd);font-size:.95rem}
 </style>
 </head>
 <body>
@@ -348,10 +349,13 @@ async function load() {
   paintPublic();
 }
 const ROOM = /^(الرباعي|رباعي|الثلاثي|ثلاثي|الثنائي|ثنائي|السينجل|سينجل|الطفل|طفل|الرضيع|رضيع)\s*[:：]\s*([\d,]+)/;
-function parse(o) { const pr = [], rest = []; String(o.details || '').split('\n').forEach(l => { l = l.trim(); const m = l.match(ROOM); if (m) pr.push([m[1].replace(/^ال/, ''), m[2]]); else if (l) rest.push(l); }); return { pr, rest }; }
-const card = o => { const { pr, rest } = parse(o); return `<article class="fc"><div class="fh${safeImg(o.image) ? ' im' : ''}"><img loading="lazy" decoding="async" alt="${esc(o.title)}" data-zoom="1" src="${esc(pic(o))}">${o.duration ? `<span class="bd">${esc(o.duration)}</span>` : ''}</div><div class="fb">
+const DT = /^موعد العمرة\s*[:：]\s*(\d{4}-\d{2}-\d{2})(?:\s*إلى\s*(\d{4}-\d{2}-\d{2}))?\s*$/;
+const fd = (i, y) => new Date(i + 'T00:00:00').toLocaleDateString('ar-EG-u-nu-latn', y ? { day: 'numeric', month: 'long', year: 'numeric' } : { day: 'numeric', month: 'long' });
+const rng = dt => dt[1] ? 'من ' + fd(dt[0], dt[0].slice(0, 4) !== dt[1].slice(0, 4)) + ' إلى ' + fd(dt[1], true) : fd(dt[0], true);
+function parse(o) { const pr = [], rest = []; let dt = null; String(o.details || '').split('\n').forEach(l => { l = l.trim(); const m = l.match(ROOM), d = l.match(DT); if (m) pr.push([m[1].replace(/^ال/, ''), m[2]]); else if (d && !dt) dt = [d[1], d[2] || '']; else if (l) rest.push(l); }); return { pr, rest, dt }; }
+const card = o => { const { pr, rest, dt } = parse(o); return `<article class="fc"><div class="fh${safeImg(o.image) ? ' im' : ''}"><img loading="lazy" decoding="async" alt="${esc(o.title)}" data-zoom="1" src="${esc(pic(o))}">${o.duration ? `<span class="bd">${esc(o.duration)}</span>` : ''}</div><div class="fb">
 <h3>${esc(o.title)}</h3><div class="meta">${[o.hotel, o.stars ? '★'.repeat(o.stars) : '', o.airline].filter(Boolean).map(esc).join(' · ')}</div>
-<ul>${rest.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
+${dt ? `<div class="dt"><span aria-hidden="true">📅</span> موعد العمرة: ${esc(rng(dt))}</div>` : ''}<ul>${rest.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
 ${pr.length ? `<div class="pg">${pr.map(x => `<i>${esc(x[0])}<b>${esc(x[1])}</b>جنيه</i>`).join('')}</div>` : `<div class="price">${esc(o.price)}</div>`}
 <div class="row"><button class="bk" data-book="${esc(o.id)}">احجز الآن</button><button class="o" data-fav="${esc(o.id)}" aria-label="المفضلة" aria-pressed="${favs.has(o.id)}">${favs.has(o.id) ? '♥' : '♡'}</button><a class="btn o" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent('استفسار عن: ' + o.title)}">واتساب</a></div></div></article>`; };
 const TY = '<div class="ty"><div class="th"><h3>عمرة التيسير</h3><p>بتطلع عمرة بنفس سعر الكاش</p><ul class="tp"><li>من غير مقدم</li><li>من غير فوايد</li><li>من غير مصاريف إدارية</li></ul></div><div class="tbd"><div class="plans"><div class="pl"><small>قسط لمدة</small><b>24 شهر</b><div class="am"><span>1000</span><span>1250</span><span>1500</span></div><small>جنيه في الشهر، يبدأ من</small></div><div class="pl"><small>قسط لمدة</small><b>12 شهر</b><div class="am"><span>2000</span><span>2500</span><span>3000</span></div><small>جنيه في الشهر، يبدأ من</small></div></div><ol class="sp"><li><i>1</i>تختار الوقت اللي يناسبك</li><li><i>2</i>تختار البرنامج</li><li><i>3</i>تدفع الفرق بين أقساطك وسعر البرنامج</li></ol><div class="dr"><span aria-hidden="true">🎁</span><div><b>قرعة كل 3 شهور</b><br>8 قرعات خلال 24 شهر، و4 قرعات خلال 12 شهر</div></div><div class="ex"><b>مثال</b>قسط 1500 × 24 شهر = <b class="n">36,000</b> جنيه. لو البرنامج 40,000 تدفع الفرق <b class="n">4,000</b> جنيه كاش وتسافر.</div></div></div>';
@@ -504,10 +508,11 @@ async function aTab(t) {
 window.editOffer = (id, copy) => {
   const o = id ? { ...byId(id) } : { category: adm.c || cat, status: 'active' };
   if (copy) { o.id = ''; o.title = o.title + ' (نسخة)'; o.status = 'active'; }
-  const { rooms, rest } = split(o), I = (k, n, x = '') => `<label>${n}<input name="${k}" value="${esc(o[k])}" ${x}></label>`;
+  const { rooms, rest } = split(o), DI = rest.findIndex(l => DT.test(l)), DM = DI >= 0 ? rest.splice(DI, 1)[0].match(DT) : null, I = (k, n, x = '') => `<label>${n}<input name="${k}" value="${esc(o[k])}" ${x}></label>`;
   $('#dform').innerHTML = `<h2>${copy ? 'نسخ عرض' : o.id ? 'تعديل عرض' : 'عرض جديد'}</h2>` +
     `<label>العنوان *<input name="title" value="${esc(o.title)}" required></label>` +
     `<div class="g2"><label>القسم<select name="category">${Object.entries(CATS).map(([c, t]) => `<option value="${c}"${c === o.category ? ' selected' : ''}>${t}</option>`).join('')}</select></label>${I('duration', 'المدة')}</div>` +
+    `<div class="g2"><label>تاريخ العمرة (من)<input type="date" name="d1" value="${DM ? DM[1] : ''}"></label><label>إلى (اختياري)<input type="date" name="d2" value="${DM && DM[2] ? DM[2] : ''}"></label></div>` +
     `<fieldset class="rm"><legend>أسعار الغرف (جنيه) — سيب اللي مش موجود فاضي</legend><div class="g3">${ROOMS.map(r => `<label>${r}<input name="r_${r}" type="number" min="0" inputmode="numeric" value="${esc(rooms[r] ?? '')}"></label>`).join('')}</div></fieldset>` +
     `<div class="g2">${I('price', 'السعر (نص يظهر للزائر)')}${I('priceFrom', 'أقل سعر (رقم للفلتر)', 'type="number" min="0"')}</div>` +
     `<div class="meta">لو كتبت أسعار الغرف: «أقل سعر» و«تبدأ من» بيتحدثوا لوحدهم من سعر الرباعي.</div>` +
@@ -521,9 +526,12 @@ window.editOffer = (id, copy) => {
     e.preventDefault(); const f = Object.fromEntries(new FormData(e.target)), m = $('#dmsg'), err = x => { m.hidden = false; m.textContent = x; };
     if (!f.title.trim()) return err('اكتب عنوان العرض');
     if (f.image && !/^(https:\/\/|images\/)/.test(f.image)) return err('رابط الصورة لازم يبدأ بـ https:// أو images/');
+    const d1 = f.d1 || '', d2 = f.d2 || '';
+    if (d2 && !d1) return err('اكتب تاريخ بداية العمرة');
+    if (d1 && d2 && d2 < d1) return err('تاريخ النهاية قبل تاريخ البداية');
     const rm = {}; ROOMS.forEach(r => { const n = Math.round(+f['r_' + r]); if (n > 0) rm[r] = String(n); });
     const d = { id: o.id || newId(), title: f.title.trim(), category: f.category, duration: f.duration, hotel: f.hotel, stars: f.stars ? +f.stars : '', city: f.city, airline: f.airline, image: f.image,
-      details: build(f.details.split('\n').map(s => s.trim()).filter(Boolean), rm), price: f.price, priceFrom: +f.priceFrom || 0, status: o.status }, low = lowest(rm);
+      details: build((d1 ? ['موعد العمرة: ' + d1 + (d2 ? ' إلى ' + d2 : '')] : []).concat(f.details.split('\n').map(s => s.trim()).filter(Boolean)), rm), price: f.price, priceFrom: +f.priceFrom || 0, status: o.status }, low = lowest(rm);
     if (low) { if (String(o.priceFrom ?? '') === f.priceFrom) d.priceFrom = low; if (!f.price || (f.price === String(o.price ?? '') && /^تبدأ من/.test(f.price))) d.price = 'تبدأ من ' + fmt(low) + ' ج.م'; }
     dlg.close(); saveOffer(d);
   };
