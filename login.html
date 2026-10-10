@@ -2,36 +2,53 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b2f47">
 <title>تسجيل الدخول | همسة للسياحة</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f3f9fc;--card:#fff;--ink:#0f2433;--mute:#4f6676;--hd:#0b2f47;--g:#0b2f47;--g2:#14587f;--gold:#8a6700;--y:#fac80f;--line:#d3e4ee;--err:#b3261e}
 @media(prefers-color-scheme:dark){:root{--bg:#0a1b27;--card:#10293a;--ink:#e6f1f8;--mute:#9ab5c6;--hd:#071d2d;--g:#8cd0f5;--g2:#14587f;--gold:#fac80f;--line:#223f52;--err:#ff8a80}}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:flex;flex-direction:column;font:16px/1.7 'IBM Plex Sans Arabic',Tahoma,sans-serif;background:var(--bg);color:var(--ink)}
-header{background:var(--hd);border-bottom:3px solid var(--y);padding:10px 5vw;display:flex;align-items:center;justify-content:space-between}
-header a{color:#fff;text-decoration:none;font-size:.95rem;border:1px solid #fff8;padding:6px 14px;border-radius:8px}
-.wrap{flex:1;display:grid;place-items:center;padding:24px 5vw;background:linear-gradient(180deg,#0b2f4714,transparent)}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;font:16px/1.7 'IBM Plex Sans Arabic',Tahoma,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--hd);border-bottom:3px solid var(--y);padding:10px max(5vw,env(safe-area-inset-right)) 10px max(5vw,env(safe-area-inset-left));padding-top:max(10px,env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;gap:10px}
+header a{color:#fff;text-decoration:none;font-size:.95rem;border:1px solid #fff8;padding:8px 14px;border-radius:8px;min-height:40px;display:inline-flex;align-items:center;white-space:nowrap}
+header a:hover{background:#ffffff1f}
+.wrap{flex:1;display:grid;place-items:center;padding:24px max(5vw,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(5vw,env(safe-area-inset-left));background:linear-gradient(180deg,#0b2f4714,transparent)}
 .box{width:min(440px,100%);background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px;box-shadow:0 10px 30px #0b2f4720}
-.box img{height:56px;display:block;margin:0 auto 12px}
+.box img{height:56px;max-width:100%;object-fit:contain;display:block;margin:0 auto 12px}
 h1{margin:0 0 4px;font-size:1.5rem;text-align:center}
 .sub{margin:0 0 18px;text-align:center;color:var(--mute);font-size:.92rem}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:16px;border:1px solid var(--line)}
-.seg button{background:transparent;color:var(--ink);border:0;padding:8px}
+.seg button{background:transparent;color:var(--ink);border:0;padding:8px;min-height:44px}
 .seg button.on{background:var(--hd);color:var(--y)}
 form{display:grid;gap:12px}
 label{display:grid;gap:4px;font-size:.92rem;color:var(--mute)}
-input{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);width:100%}
-.pw{position:relative}.pw input{padding-inline-end:64px}
-.pw button{position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);padding:4px 10px;font-size:.82rem;background:transparent;color:var(--g);border:0}
-button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--g2);background:var(--g2);color:#fff;padding:10px 16px}
-button[type=submit]{width:100%;font-weight:700;background:var(--y);border-color:var(--y);color:#0b2f47}
+input{font:inherit;font-size:16px;padding:10px 12px;min-height:46px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);width:100%}
+.pw{position:relative;display:block}.pw input{padding-inline-end:76px}
+.pw button{position:absolute;inset-inline-end:4px;top:50%;transform:translateY(-50%);padding:4px 10px;min-height:38px;font-size:.85rem;background:transparent;color:var(--g);border:0}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--g2);background:var(--g2);color:#fff;padding:10px 16px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button[type=submit]{width:100%;min-height:48px;font-weight:700;background:var(--y);border-color:var(--y);color:#0b2f47}
+@media(hover:hover){button[type=submit]:hover:not(:disabled){filter:brightness(1.07)}.seg button:not(.on):hover{background:#14587f1f}}
 button:disabled{opacity:.6;cursor:wait}
-button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .msg{padding:10px;border-radius:8px;background:#b3261e22;color:var(--err);font-size:.92rem}
 .note{margin-top:14px;font-size:.85rem;color:var(--mute);text-align:center}
 .hp{position:absolute;left:-9999px}
+/* موبايل */
+@media(max-width:480px){
+  .wrap{align-items:start;padding-top:16px}
+  .box{padding:20px 16px;border-radius:14px}
+  h1{font-size:1.3rem}
+  header span{font-size:.95rem}
+  header a{font-size:.88rem;padding:8px 10px}
+}
+/* شاشات قصيرة (موبايل أفقي) */
+@media(max-height:520px){.wrap{align-items:start}.box img{height:40px}}
+/* شاشات كبيرة */
+@media(min-width:900px){.box{padding:36px;width:min(480px,100%)}h1{font-size:1.7rem}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
@@ -46,9 +63,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-o
     <button type="button" id="tReg" role="tab">حساب جديد (زائر)</button>
   </div>
   <form id="f" novalidate>
-    <label id="nameL" hidden>الاسم<input name="name" autocomplete="name" maxlength="60"></label>
-    <label><span id="uLbl">اسم المستخدم أو الإيميل</span><input name="u" required autocomplete="username" dir="ltr" style="text-align:start"></label>
-    <label>كلمة السر<span class="pw"><input name="p" id="p" type="password" required autocomplete="current-password" dir="ltr" style="text-align:start"><button type="button" id="eye">إظهار</button></span></label>
+    <label id="nameL" hidden>الاسم<input name="name" autocomplete="name" enterkeyhint="next" maxlength="60"></label>
+    <label><span id="uLbl">اسم المستخدم أو الإيميل</span><input name="u" required autocomplete="username" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" dir="ltr" style="text-align:start"></label>
+    <label>كلمة السر<span class="pw"><input name="p" id="p" type="password" required autocomplete="current-password" autocapitalize="none" enterkeyhint="go" dir="ltr" style="text-align:start"><button type="button" id="eye">إظهار</button></span></label>
     <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
     <div id="err" class="msg" role="alert" hidden></div>
     <button type="submit" id="go">دخول</button>
