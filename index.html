@@ -284,7 +284,7 @@ $('#lead').onsubmit = async e => {
 };
 
 // ----- الدخول -----
-function ui() { $('#loginBtn').textContent = me ? 'خروج (' + me.name + ')' : 'تسجيل الدخول'; $('#adminBtn').hidden = !me; $('#adminBtn').textContent = me && me.role === 'visitor' ? 'حسابي' : 'لوحة التحكم'; if (!me) showAdmin(false); }
+function ui() { $('#loginBtn').textContent = me ? 'خروج (' + me.name + ')' : 'تسجيل الدخول'; $('#adminBtn').hidden = !me || me.role === 'staff'; $('#adminBtn').textContent = me && me.role === 'visitor' ? 'حسابي' : 'لوحة التحكم'; if (!me) showAdmin(false); }
 function logout() { token = me = null; window._o = null; adm.sel.clear(); favs = new Set(); render(); sessionStorage.clear(); ui(); }
 $('#loginBtn').onclick = () => me ? logout() : (location.href = 'login.html');
 $('#lsw').onclick = e => { e.preventDefault(); reg = !reg; $('#ltitle').textContent = reg ? 'إنشاء حساب جديد' : 'تسجيل الدخول'; $('#lname').hidden = !reg; $('#lname input').required = reg; $('#luser').textContent = reg ? 'الإيميل' : 'اسم المستخدم أو الإيميل'; $('#lgo').textContent = reg ? 'إنشاء الحساب' : 'دخول'; $('#lsw').textContent = reg ? 'عندي حساب؟ سجّل دخول' : 'زائر جديد؟ أنشئ حساب'; $('#lmsg').hidden = true; };
@@ -292,12 +292,12 @@ $('#lform').onsubmit = async e => {
   e.preventDefault(); const f = Object.fromEntries(new FormData(e.target));
   try { if (reg) await api('register', { name: f.name, email: f.u, password: f.p });
     const r = await api('login', { u: f.u, p: f.p }); token = r.token; me = { name: r.name, role: r.role };
-    sessionStorage.setItem('t', token); sessionStorage.setItem('me', JSON.stringify(me)); e.target.reset(); ldlg.close(); ui(); loadFavs(); if (me.role !== 'visitor') showAdmin(true); }
+    sessionStorage.setItem('t', token); sessionStorage.setItem('me', JSON.stringify(me)); e.target.reset(); ldlg.close(); ui(); loadFavs(); if (me.role === 'owner') showAdmin(true); }
   catch (x) { $('#lmsg').hidden = false; $('#lmsg').textContent = x.message; }
 };
 async function loadFavs() { if (!me) return; try { favs = new Set((await api('favs')).ids); } catch (x) {} render(); }
 async function toggleFav(id) { if (!me) { location.href = 'login.html'; return; } try { favs = new Set((await api('toggleFav', { id })).ids); } catch (x) { alert(x.message); } render(); if (!$('#admin').hidden && me.role === 'visitor') aTab('fav'); }
-function showAdmin(on) { $('#admin').hidden = !on; $('#site').hidden = on; if (on) { const t = me.role === 'visitor' ? [['fav', 'المفضلة'], ['mine', 'طلباتي']] : [['offers', 'العروض'], ['leads', 'الطلبات']]; if (me.role === 'owner') t.push(['users', 'الموظفين']);
+function showAdmin(on) { if (on && (!me || me.role === 'staff')) on = false; $('#admin').hidden = !on; $('#site').hidden = on; if (on) { const t = me.role === 'visitor' ? [['fav', 'المفضلة'], ['mine', 'طلباتي']] : [['offers', 'العروض'], ['leads', 'الطلبات']]; if (me.role === 'owner') t.push(['users', 'الموظفين']);
   $('#atabs').innerHTML = t.map(x => `<button data-a="${x[0]}">${x[1]}</button>`).join('') + ' <button class="o" id="back">رجوع للموقع</button>'; $('#back').onclick = () => showAdmin(false); aTab(t[0][0]); } }
 $('#adminBtn').onclick = () => showAdmin($('#admin').hidden);
 $('#atabs').onclick = e => e.target.dataset.a && aTab(e.target.dataset.a);
@@ -452,7 +452,7 @@ $('#bform').onsubmit = async e => {
 };
 
 window.api = api;
-ui(); load().then(loadFavs); if (me && me.role !== 'visitor' && location.hash === '#admin') showAdmin(true);
+ui(); load().then(loadFavs); if (me && me.role === 'owner' && location.hash === '#admin') showAdmin(true);
 </script>
 <script>
 // ظهور تدريجي للعناصر وقت السكرول (مفيش تثبيت للصفحة)
