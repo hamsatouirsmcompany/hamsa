@@ -141,6 +141,31 @@ dialog{max-height:92vh;max-height:92dvh;overflow:auto;overscroll-behavior:contai
 @media(max-width:360px){.pg{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr}}
 @media(max-height:480px) and (orientation:landscape){.hero2.js{height:420vh}.hero2 .in{font-size:clamp(4rem,28vh,9rem)}.hero2 .tl{font-size:clamp(1.6rem,9vh,3rem)}.hero2 .cue{display:none!important}}
 @media(min-width:1200px){main{max-width:1180px}.hero2 .pp{font-size:1.15rem}}
+.hero2 .stage{min-height:92vh;min-height:92svh}
+.hero2 .bgm{transform:none}
+
+/* ===== حركات خفيفة (من غير سكرول مثبّت) ===== */
+@keyframes up{from{opacity:0;transform:translateY(22px)}}
+@keyframes pop{from{opacity:0;transform:scale(.9)}}
+@keyframes kb{to{transform:scale(1.12)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 #1f9d5588}100%{box-shadow:0 0 0 16px #1f9d5500}}
+.hero2 .bgm{animation:kb 22s ease-in-out infinite alternate}
+.hero2 .kick{animation:up .8s .5s both}
+.hero2 .tl span{animation:up .7s both;animation-delay:calc(.7s + var(--i)*.11s)}
+.hero2 .pp{animation:up .8s 1.5s both}
+.hero2 .cta{animation:pop .6s 1.8s both}
+header{animation:up .6s both}
+.rv{opacity:0;transform:translateY(26px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+.fc,.card{transition:transform .25s ease,box-shadow .25s ease,opacity .6s ease}
+@media(hover:hover){.fc:hover{transform:translateY(-5px)}.fh img{transition:transform .5s ease}.fc:hover .fh:not(.im) img{transform:scale(1.07)}.fh{overflow:hidden}.gal img{transition:transform .4s ease}.gal img:hover{transform:scale(1.04)}}
+button:active,.btn:active{transform:scale(.96)}
+button,.btn{transition:transform .15s ease,filter .2s ease,background .2s ease}
+.wa{animation:pulse 2.4s 2s infinite}
+dialog[open]{animation:pop .25s ease both}
+dialog[open]::backdrop{animation:fade .25s both}
+@keyframes fade{from{opacity:0}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -430,16 +455,12 @@ window.api = api;
 ui(); load().then(loadFavs); if (me && me.role !== 'visitor' && location.hash === '#admin') showAdmin(true);
 </script>
 <script>
-// Hero2: بيحوّل السكرول لمتغيرات CSS (--a كلمة همسة / --b الجملة / --c الفقرة والزر)
-(()=>{const h=document.getElementById('hero2');if(!h||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
-h.classList.add('js');
-const cl=(x)=>Math.min(1,Math.max(0,x)),seg=(p,s,e)=>cl((p-s)/(e-s)),ease=t=>1-Math.pow(1-t,3);
-let q=0;
-function u(){q=0;const t=h.offsetHeight-innerHeight,p=t>0?cl(-h.getBoundingClientRect().top/t):0,st=h.style;
-st.setProperty('--p',p.toFixed(4));st.setProperty('--a',ease(seg(p,0,.4)).toFixed(4));
-st.setProperty('--b',seg(p,.22,.62).toFixed(4));st.setProperty('--c',ease(seg(p,.58,.8)).toFixed(4));
-h.classList.toggle('go',p>.7)}
-addEventListener('scroll',()=>{q||(q=requestAnimationFrame(u))},{passive:true});addEventListener('resize',u);u();})();
+// ظهور تدريجي للعناصر وقت السكرول (مفيش تثبيت للصفحة)
+(()=>{if(matchMedia('(prefers-reduced-motion:reduce)').matches||!('IntersectionObserver' in window))return;
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+const sel='.fc,.ty,.gal img,#contact h2,#contact form,#gallery h2';
+function scan(){document.querySelectorAll(sel).forEach((el,i)=>{if(el.dataset.rv)return;el.dataset.rv=1;el.classList.add('rv');el.style.transitionDelay=(i%3)*80+'ms';io.observe(el)})}
+scan();new MutationObserver(scan).observe(document.getElementById('site'),{childList:true,subtree:true});})();
 </script>
 </body>
 </html>
