@@ -679,10 +679,10 @@ const GPH = [
 // ===== فنادقنا =====
 // عشان تضيف صورة لفندق: حط الصورة في images/hotels وضيف  i: 'images/hotels/اسم.webp'  في سطر الفندق. من غير صورة بتظهر أيقونة.
 const HOTELS = [
-  { s: 5, d: 'في برج الساعة', items: [{ n: 'الشهداء' }, { n: 'الصفوة' }, { n: 'موفنبيك' }] },
-  { s: 4, d: 'ضهر برج الساعة', items: [{ n: 'الماسة جراند' }, { n: 'رمادا دار الفايزين' }, { n: 'العليان أجياد', w: 'شارع أجياد' }] },
-  { s: 3, d: 'حوالي 600 متر من الحرم', items: [{ n: 'أعمار آفاق', w: 'شارع أجياد' }, { n: 'واحة الضيافة', w: 'شارع أجياد' }] },
-  { s: 3, d: 'حوالي 1 كم من الحرم', items: [{ n: 'قصر العليان', w: 'شارع أجياد' }, { n: 'أبراج الكسوة', w: 'شارع أجياد' }, { n: 'أبراج القصواء', w: 'شارع أجياد' }, { n: 'سرايا الجوار', w: 'محبس الجن' }] }
+  { s: 5, d: 'في برج الساعة', items: [{ n: 'الشهداء', i: 'images/hotels/shohada.webp' }, { n: 'الصفوة', i: 'images/hotels/safwa.webp' }, { n: 'موفنبيك', i: 'images/hotels/movenpick.webp' }] },
+  { s: 4, d: 'ضهر برج الساعة', items: [{ n: 'الماسة جراند', i: 'images/hotels/masa-grand.webp' }, { n: 'رمادا دار الفايزين', i: 'images/hotels/dar-alfaezeen.webp' }, { n: 'العليان أجياد', i: 'images/hotels/olayan-ajyad.webp', w: 'شارع أجياد' }] },
+  { s: 3, d: 'حوالي 600 متر من الحرم', items: [{ n: 'أعمار آفاق', i: 'images/hotels/amaar-afaq.webp', w: 'شارع أجياد' }, { n: 'واحة الضيافة', i: 'images/hotels/waha-diyafa.webp', w: 'شارع أجياد' }] },
+  { s: 3, d: 'حوالي 1 كم من الحرم', items: [{ n: 'قصر العليان', i: 'images/hotels/qasr-olayan.webp', w: 'شارع أجياد' }, { n: 'أبراج الكسوة', i: 'images/hotels/kiswa.webp', w: 'شارع أجياد' }, { n: 'أبراج القصواء', i: 'images/hotels/qaswaa.webp', w: 'شارع أجياد' }, { n: 'سرايا الجوار', i: 'images/hotels/saraya-jiwar.webp', w: 'محبس الجن' }] }
 ];
 (() => {
   const $ = s => document.querySelector(s), e = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
