@@ -302,6 +302,9 @@ html{scroll-padding-top:92px}
   header button{padding:6px 9px;font-size:.84rem;min-height:38px;white-space:nowrap}
   header>a:first-child img{height:42px!important}
 }
+.gg.mas{display:block;column-count:3;column-gap:12px}
+.gg.mas .gi{margin-bottom:12px;break-inside:avoid;width:100%}
+@media(max-width:640px){.gg.mas{column-count:2;column-gap:10px}.gg.mas .gi{margin-bottom:10px}}
 </style>
 </head>
 <body>
@@ -625,8 +628,8 @@ if(c.saveData||/^(slow-2g|2g|3g)$/.test(c.effectiveType||'')||matchMedia('(max-w
 <script>
 // ===== لحظاتنا مع ضيوف الرحمن =====
 // عشان تضيف صورة: حطها في images/gallery وضيف سطر هنا. التابات الفاضية بتختفي لوحدها.
-const GCATS = { umra: 'صور العمرة', hajj: 'صور الحج', qora: 'صور قرعة التيسير', init: 'مبادرة تيسير العمرة' };
-const GFMT = { init: { ar: '4/5', min: '220px' } }; // الصور الطولية (بوسترات): نسبة العرض وأصغر عرض للكارت
+const GCATS = { umra: 'في رحاب الحرمين', hajj: 'صور الحج', qora: 'مبادرة تيسير العمرة' };
+// r = نسبة عرض/ارتفاع الصورة لو مش أفقية 4/3 (مثلاً بوستر طولي '4/5' أو صورة طولية '2/3'). التاب اللي فيه نسب مختلفة بيتعرض متراصّ تلقائي.
 const GPH = [
   { c: 'umra', f: 'umra-1', t: 'أمام الكعبة المشرفة' },
   { c: 'umra', f: 'umra-2', t: 'رحلة المدينة المنورة' },
@@ -635,14 +638,14 @@ const GPH = [
   { c: 'umra', f: 'umra-5', t: 'داخل المسجد الحرام' },
   { c: 'umra', f: 'umra-6', t: 'لحظة الانطلاق' },
   { c: 'qora', f: 'qora-1', t: 'مبروك عمرة التيسير' },
+  { c: 'qora', f: 'init-1', t: 'مبادرة تيسير العمرة', q: 1, r: '4/5' },
   { c: 'qora', f: 'qora-2', t: 'حضور سحب قرعة التيسير' },
+  { c: 'qora', f: 'init-2', t: 'مبادرة تيسير العمرة', q: 1, r: '4/5' },
   { c: 'qora', f: 'qora-3', t: 'فرحة الحضور' },
-  { c: 'qora', f: 'qora-4', t: 'لحظات الفرح بعد الإعلان', p: '50% 30%' },
-  { c: 'qora', f: 'qora-5', t: 'دموع الفرح', p: '50% 30%' },
-  { c: 'init', f: 'init-1', t: 'مبادرة تيسير العمرة', q: 1 },
-  { c: 'init', f: 'init-2', t: 'مبادرة تيسير العمرة', q: 1 },
-  { c: 'init', f: 'init-3', t: 'مبادرة تيسير العمرة', q: 1 },
-  { c: 'init', f: 'init-4', t: 'مبادرة تيسير العمرة', q: 1 }
+  { c: 'qora', f: 'init-3', t: 'مبادرة تيسير العمرة', q: 1, r: '4/5' },
+  { c: 'qora', f: 'qora-4', t: 'لحظات الفرح بعد الإعلان', r: '2/3' },
+  { c: 'qora', f: 'init-4', t: 'مبادرة تيسير العمرة', q: 1, r: '4/5' },
+  { c: 'qora', f: 'qora-5', t: 'دموع الفرح', r: '2/3' }
 ];
 (() => {
   const $ = s => document.querySelector(s), cats = Object.keys(GCATS).filter(k => GPH.some(p => p.c === k));
@@ -650,9 +653,9 @@ const GPH = [
   let cur = cats[0], list = [], idx = 0;
   const e = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function show() {
-    list = GPH.filter(p => p.c === cur); const F = GFMT[cur] || {};
-    $('#gg').style.setProperty('--ar', F.ar || '4/3'); $('#gg').style.setProperty('--gm', F.min || '300px');
-    $('#gg').innerHTML = list.map((p, i) => `<a class="gi" href="images/gallery/${p.f}.webp" data-i="${i}"><img loading="lazy" decoding="async" width="640" height="480" alt="${e(p.t)}" src="images/gallery/${p.f}-t.webp"${p.p ? ` style="object-position:${p.p}"` : ''}>${p.q ? '' : `<span>${e(p.t)}</span>`}</a>`).join('');
+    list = GPH.filter(p => p.c === cur);
+    $('#gg').className = 'gg' + (list.some(p => p.r) ? ' mas' : '');
+    $('#gg').innerHTML = list.map((p, i) => `<a class="gi" href="images/gallery/${p.f}.webp" data-i="${i}" style="aspect-ratio:${p.r || '4/3'}"><img loading="lazy" decoding="async" width="640" height="480" alt="${e(p.t)}" src="images/gallery/${p.f}-t.webp"${p.p ? ` style="object-position:${p.p}"` : ''}>${p.q ? '' : `<span>${e(p.t)}</span>`}</a>`).join('');
   }
   function tabs() {
     $('#gtabs').hidden = cats.length < 2;
