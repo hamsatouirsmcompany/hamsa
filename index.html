@@ -153,28 +153,72 @@ dialog{max-height:92vh;max-height:92dvh;overflow:auto;overscroll-behavior:contai
 .hero2 .stage{min-height:92vh;min-height:92svh}
 .hero2 .bgm{transform:none}
 
-/* ===== حركات خفيفة (من غير سكرول مثبّت) ===== */
-@keyframes up{from{opacity:0;transform:translateY(22px)}}
-@keyframes pop{from{opacity:0;transform:scale(.9)}}
-@keyframes kb{to{transform:scale(1.12)}}
-@keyframes pulse{0%{box-shadow:0 0 0 0 #1f9d5588}100%{box-shadow:0 0 0 16px #1f9d5500}}
-
-.hero2 .kick{animation:up .8s .5s both}
-.hero2 .tl span{animation:up .7s both;animation-delay:calc(.7s + var(--i)*.11s)}
-.hero2 .pp{animation:up .8s 1.5s both}
-.hero2 .cta{animation:pop .6s 1.8s both}
-header{animation:up .6s both}
-.rv{opacity:0;transform:translateY(26px);transition:opacity .6s ease,transform .6s ease}
-.rv.in{opacity:1;transform:none}
-.fc,.card{transition:transform .25s ease,box-shadow .25s ease,opacity .6s ease}
-@media(hover:hover){.fc:hover{transform:translateY(-5px)}.gal img{transition:transform .4s ease}.gal img:hover{transform:scale(1.04)}}
-button:active,.btn:active{transform:scale(.96)}
-button,.btn{transition:transform .15s ease,filter .2s ease,background .2s ease}
-.wa{animation:pulse 2.4s 2s 3}
-dialog[open]{animation:pop .25s ease both}
-dialog[open]::backdrop{animation:fade .25s both}
+/* ===== نظام الحركة: هادي على العين، ويلفت الانتباه ===== */
+:root{--ease:cubic-bezier(.22,1,.36,1)}
+html{scroll-behavior:smooth}
+@keyframes up{from{opacity:0;transform:translateY(24px)}}
+@keyframes pop{from{opacity:0;transform:scale(.92)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px) scale(.97)}}
 @keyframes fade{from{opacity:0}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+@keyframes slideIn{from{opacity:0;transform:translateY(-100%)}}
+@keyframes waIn{from{opacity:0;transform:translateY(30px) scale(.8)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 #1f9d5588}100%{box-shadow:0 0 0 16px #1f9d5500}}
+@keyframes ring{0%{box-shadow:0 0 0 0 #f5c50fb0}100%{box-shadow:0 0 0 20px #f5c50f00}}
+@keyframes shine{from{transform:translateX(130%) skewX(-18deg)}to{transform:translateX(-230%) skewX(-18deg)}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}55%{transform:rotate(10deg)}80%{transform:rotate(-5deg)}}
+@keyframes heroOut{to{opacity:.1;transform:translateY(-36px) scale(.98)}}
+@keyframes bgOut{to{transform:scale(1.1)}}
+/* الهيرو: يظهر بالترتيب، كل حاجة في دورها */
+header{animation:slideIn .7s var(--ease) both;transition:box-shadow .3s ease}
+header.stuck{box-shadow:0 8px 24px #14295f22}
+.hero2 .in{animation:h2rise 1.2s var(--ease) .1s both}
+.hero2 .sub{animation:h2fade 1s .6s both}
+.hero2 .kick{animation:up .8s var(--ease) .85s both}
+.hero2 .tl span{animation:up .85s var(--ease) both;animation-delay:calc(1s + var(--i)*.09s)}
+.hero2 .pp{animation:up .85s var(--ease) 1.65s both}
+.hero2 .cta{position:relative;overflow:hidden;animation:pop .7s var(--ease) 1.95s both,ring 1.8s 3.2s 2}
+.hero2 .cta:after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,#ffffffa8 50%,transparent 70%);transform:translateX(130%);animation:shine 1.2s 2.9s 1 both;pointer-events:none}
+.hero2 .tk{animation:fade 1s 2.2s both}
+.hero2 .tk:hover div{animation-play-state:paused}
+@supports (animation-timeline:view()){
+  .hero2 .layer{animation:heroOut linear both;animation-timeline:view();animation-range:exit 5% exit 100%}
+  .hero2 .bgm{animation:bgOut linear both;animation-timeline:view();animation-range:exit}
+}
+/* الظهور وقت السكرول: كل صف بيدخل بتتابع هادي */
+.fc,.hc,.gi{transition:transform .3s var(--ease),box-shadow .3s var(--ease),border-color .3s ease}
+.rv{opacity:0;transform:translateY(28px) scale(.985)}
+.rv:not(.done){transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.rv.in{opacity:1;transform:none}
+.rv.done{transition-delay:0s}
+section h2:after{content:"";display:block;width:56px;height:4px;border-radius:4px;background:var(--y);margin-top:8px;transform-origin:right;transition:transform .9s var(--ease) .2s}
+section h2.rv:not(.in):after{transform:scaleX(0)}
+/* صندوق التيسير: العناصر تنزل واحدة واحدة */
+.ty.in .am span{animation:pop .5s var(--ease) both}
+.ty.in .am span:nth-child(1){animation-delay:.25s}.ty.in .am span:nth-child(2){animation-delay:.35s}.ty.in .am span:nth-child(3){animation-delay:.45s}
+.ty.in .sp li{animation:up .6s var(--ease) both}
+.ty.in .sp li:nth-child(1){animation-delay:.5s}.ty.in .sp li:nth-child(2){animation-delay:.62s}.ty.in .sp li:nth-child(3){animation-delay:.74s}
+.ty.in .dr>span{display:inline-block;animation:wiggle 1s 1.1s 1}
+.ty.in .ex{animation:up .7s var(--ease) .95s both}
+/* التفاعل */
+@media(hover:hover){
+  .fc:hover{transform:translateY(-6px);box-shadow:0 14px 32px #d49b0033;border-color:#e6c75a}
+  .hc:hover .hph img{transform:scale(1.07)}
+  .gi:hover{box-shadow:0 12px 28px #14295f2e}
+}
+.hph img{transition:transform .8s var(--ease)}
+button,.btn{transition:transform .2s var(--ease),filter .2s ease,background .25s ease,box-shadow .25s ease,color .25s ease}
+button:active,.btn:active{transform:scale(.96)}
+.tabs button{transition:background .25s ease,color .25s ease,box-shadow .25s ease,transform .2s var(--ease)}
+.tabs button.on{box-shadow:0 4px 14px #f5c50f66}
+input,select,textarea{transition:box-shadow .25s ease,border-color .25s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--y);box-shadow:0 0 0 4px #f5c50f40}
+.wa{animation:waIn .7s var(--ease) 1.4s both,pulse 2.4s 3s 3}
+dialog[open]{animation:rise .35s var(--ease) both}
+dialog[open]::backdrop{animation:fade .3s both}
+#toast{transform:translate(-50%,14px);transition:opacity .25s ease,transform .4s var(--ease)}
+#toast.show{transform:translate(-50%,0)}
+#glb img{transition:opacity .25s ease}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}html{scroll-behavior:auto}}
 
 /* ===== صندوق عمرة التيسير ===== */
 .ty{padding:0;overflow:hidden;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 16px #14295f14}
@@ -305,6 +349,26 @@ html{scroll-padding-top:92px}
 .gg.mas{display:block;column-count:3;column-gap:12px}
 .gg.mas .gi{margin-bottom:12px;break-inside:avoid;width:100%}
 @media(max-width:640px){.gg.mas{column-count:2;column-gap:10px}.gg.mas .gi{margin-bottom:10px}}
+
+/* ===== الدفع عن طريق البنك ===== */
+#pay{margin-top:28px}
+#pay .gsub{margin:-6px 0 6px;color:var(--mute)}
+.pst{list-style:none;margin:14px 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:10px}
+.pst li{display:flex;align-items:center;gap:10px;background:var(--tint);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.pst i{flex:none;width:30px;height:30px;border-radius:50%;background:var(--y);color:var(--hd);display:grid;place-items:center;font-style:normal;font-weight:700}
+.bl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr));gap:12px}
+.bn{background:#fff;border:1px solid var(--line);border-top:4px solid var(--y);border-radius:14px;padding:14px 16px;box-shadow:0 4px 16px #d49b0018}
+.bn h3{margin:0 0 6px;color:var(--hd);display:flex;align-items:center;gap:8px;font-size:1.1rem}
+.bn h3 svg{width:26px;height:26px;color:var(--gd);flex:none}
+.br{display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:8px;padding:8px 0;border-top:1px dashed var(--line)}
+.br:first-of-type{border-top:0}
+.br .bl2{color:var(--mute);font-size:.88rem}
+.br .bv{font-weight:700;color:var(--hd);overflow-wrap:anywhere;text-align:right;font-variant-numeric:tabular-nums}
+.cp{background:#fff;border:1px solid #d9b84a;color:var(--g);min-height:36px;padding:2px 12px;font-size:.85rem;font-weight:700}
+.cp.ok{background:var(--y);border-color:var(--y);color:var(--hd)}
+.pnote{margin:14px 0 12px;padding:10px 14px;border-inline-start:4px solid var(--y);background:var(--tint);border-radius:8px;font-size:.92rem}
+#payWa{display:inline-block}
+@media(max-width:480px){.br{grid-template-columns:1fr auto}.br .bl2{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -330,6 +394,11 @@ html{scroll-padding-top:92px}
 
 <section id="hotels" aria-labelledby="ht"><h2 id="ht">فنادقنا</h2><p class="gsub">فنادق مختارة قريبة من الحرم المكي، تختار منها على حسب فئتك وميزانيتك</p><div id="hg"></div></section>
 <section id="gallery" aria-labelledby="gt"><h2 id="gt">لحظاتنا مع ضيوف الرحمن</h2><p class="gsub">صور حقيقية من رحلات ضيوفنا مع همسة للسياحة</p><div class="tabs" id="gtabs" role="tablist"></div><div class="gg" id="gg"></div></section>
+<section id="pay" aria-labelledby="pt" hidden><h2 id="pt">الدفع عن طريق البنك</h2><p class="gsub">حوّل على حساب الشركة وابعتلنا صورة الإيصال، وإحنا نأكد حجزك.</p>
+<ol class="pst"><li><i>1</i>حوّل مبلغ الحجز على حساب الشركة</li><li><i>2</i>ابعت صورة الإيصال على واتساب مع اسمك واسم العرض</li><li><i>3</i>نأكد استلام المبلغ ونثبّت حجزك</li></ol>
+<div class="bl" id="bl"></div>
+<p class="pnote"><b>مهم:</b> التحويل بيتم على الحسابات المكتوبة هنا بس. لو حد طلب منك التحويل على حساب تاني، كلمنا الأول. واحتفظ بصورة الإيصال لحد ما حجزك يتأكد.</p>
+<a class="btn" id="payWa" target="_blank" rel="noopener">ابعت إيصال التحويل على واتساب</a></section>
 <section id="contact"><h2>سجّل اهتمامك وهنكلمك</h2>
 <form class="f" id="lead">
 <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -603,7 +672,7 @@ function openBook(id) { bo = offers.find(o => o.id === id); if (!bo) return; $('
 $('#bform').onsubmit = async e => {
   e.preventDefault(); const f = Object.fromEntries(new FormData(e.target)), m = $('#bmsg'), g = $('#bgo'); g.disabled = true;
   try { await api('lead', { name: f.name, phone: f.phone, governorate: f.governorate, service: bo.title, people: (f.room ? f.room + ' × ' : '') + f.n, payment: f.payment, notes: f.notes, website: f.website });
-    m.hidden = false; m.className = 'msg ok'; m.textContent = 'وصل حجزك، هنكلمك قريب بإذن الله.'; e.target.reset(); setTimeout(() => bdlg.close(), 2500); }
+    m.hidden = false; m.className = 'msg ok'; m.textContent = 'وصل حجزك، هنكلمك قريب بإذن الله.' + (typeof BANKS !== 'undefined' && BANKS.length ? ' وتقدر تدفع بالتحويل البنكي من قسم «الدفع عن طريق البنك».' : ''); e.target.reset(); setTimeout(() => bdlg.close(), 3500); }
   catch (x) { m.hidden = false; m.className = 'msg er'; m.textContent = x.message; }
   g.disabled = false;
 };
@@ -612,11 +681,16 @@ window.api = api;
 ui(); load().then(loadFavs); if (me && me.role === 'owner' && location.hash === '#admin') showAdmin(true);
 </script>
 <script>
-// ظهور تدريجي للعناصر وقت السكرول (مفيش تثبيت للصفحة)
-(()=>{if(matchMedia('(prefers-reduced-motion:reduce)').matches||!('IntersectionObserver' in window))return;
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12,rootMargin:'0px 0px -40px 0px'});
-const sel='.fc,.ty,.gi,.hc,#contact h2,#contact form,#gallery h2,#hotels h2';
-function scan(){document.querySelectorAll(sel).forEach((el,i)=>{if(el.dataset.rv)return;el.dataset.rv=1;el.classList.add('rv');el.style.transitionDelay=(i%3)*80+'ms';io.observe(el)})}
+// حركة الظهور وقت السكرول: كل صف بيدخل بتتابع هادي، وبعدها الكارت يرجع سريع للـ hover
+(()=>{const hd=document.querySelector('header');if(hd){const f=()=>hd.classList.toggle('stuck',scrollY>8);addEventListener('scroll',f,{passive:true});f()}
+if(matchMedia('(prefers-reduced-motion:reduce)').matches||!('IntersectionObserver' in window))return;
+const io=new IntersectionObserver(es=>{
+  es.filter(e=>e.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top||b.boundingClientRect.right-a.boundingClientRect.right).forEach((e,i)=>{
+    const el=e.target,d=Math.min(i,6)*90;io.unobserve(el);el.style.transitionDelay=d+'ms';el.classList.add('in');
+    setTimeout(()=>{el.classList.add('done');el.style.transitionDelay=''},d+950)});
+},{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+const sel='.fc,.ty,.gi,.hc,.hgh,.bn,.pst li,#contact form,#hotels h2,#gallery h2,#contact h2,#pay h2';
+function scan(){document.querySelectorAll(sel).forEach(el=>{if(el.dataset.rv)return;el.dataset.rv=1;el.classList.add('rv');io.observe(el)})}
 let _sq;scan();new MutationObserver(()=>{cancelAnimationFrame(_sq);_sq=requestAnimationFrame(scan)}).observe(document.getElementById('site'),{childList:true,subtree:true});})();
 </script>
 <script>
@@ -665,6 +739,7 @@ const GPH = [
   const dlg = $('#glb'), im = dlg.querySelector('img');
   function open(i) {
     idx = (i + list.length) % list.length; const p = list[idx];
+    im.style.opacity = 0; im.onload = im.onerror = () => { im.style.opacity = 1; };
     im.src = 'images/gallery/' + p.f + '.webp'; im.alt = p.t;
     dlg.querySelector('figcaption b').textContent = p.t;
     dlg.querySelector('figcaption small').textContent = (idx + 1) + ' من ' + list.length;
@@ -702,6 +777,29 @@ const HOTELS = [
       `<article class="hc"><div class="hph${h.i ? '' : ' no'}">${ico}${h.i ? `<img loading="lazy" decoding="async" alt="${e(h.n)}" src="${e(h.i)}" onerror="this.parentNode.classList.add('no');this.remove()">` : ''}<span class="hsb">${st}</span></div><div class="hb2"><h4>${e(h.n)}</h4><span class="hw">${h.w ? e(h.w) + ' · ' : ''}${e(g.d)}</span><a class="btn o" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent('استفسار عن فندق ' + h.n + ' (' + g.s + ' نجوم)')}">اسأل عن الفندق</a></div></article>`).join('') + '</div></div>';
   }).join('');
   $('#hotBtn').onclick = () => { if (!$('#admin').hidden) showAdmin(false); $('#hotels').scrollIntoView({ behavior: 'smooth' }); };
+})();
+</script>
+<script>
+// ===== الدفع عن طريق البنك =====
+// املا بيانات الحساب هنا. لو القايمة فاضية، القسم كله بيفضل مخفي.
+// كل بنك: { bank: 'اسم البنك', holder: 'اسم الحساب', acc: 'رقم الحساب', iban: 'EG...', branch: 'الفرع (اختياري)' }
+const BANKS = [
+  { bank: 'بنك مصر', holder: 'اورينت تورز', acc: '1130001000005102' }
+  // مثال لبنك تاني: { bank: 'اسم البنك', holder: 'اسم الحساب', acc: '0000000000', iban: 'EG000000000000000000000000000', branch: 'الفرع' }
+];
+(() => {
+  const $ = s => document.querySelector(s), e = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  if (!BANKS.length) return;
+  const ico = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 20h18"/></svg>';
+  const row = (l, v, copy, ltr) => v ? `<div class="br"><span class="bl2">${l}</span><span class="bv"${ltr ? ' dir="ltr"' : ''}>${e(v)}</span>${copy ? `<button type="button" class="cp" data-v="${e(v)}" aria-label="نسخ ${l}">نسخ</button>` : '<span></span>'}</div>` : '';
+  $('#bl').innerHTML = BANKS.map(b => `<article class="bn"><h3>${ico}${e(b.bank)}</h3>${row('اسم الحساب', b.holder)}${row('رقم الحساب', b.acc, 1, 1)}${row('آيبان (IBAN)', b.iban, 1, 1)}${row('الفرع', b.branch)}</article>`).join('');
+  $('#bl').onclick = async ev => {
+    const b = ev.target.closest('.cp'); if (!b) return; const v = b.dataset.v;
+    try { await navigator.clipboard.writeText(v); } catch (x) { const t = document.createElement('textarea'); t.value = v; t.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (y) {} t.remove(); }
+    b.textContent = 'تم النسخ ✓'; b.classList.add('ok'); clearTimeout(b._t); b._t = setTimeout(() => { b.textContent = 'نسخ'; b.classList.remove('ok'); }, 1600);
+  };
+  $('#payWa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('السلام عليكم، ده إيصال التحويل البنكي لحجزي.\nالاسم: \nالعرض: ');
+  $('#pay').hidden = false;
 })();
 </script>
 </body>
