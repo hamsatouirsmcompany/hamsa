@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>الفنادق | همسة للسياحة</title>
+<meta name="description" content="فنادق مختارة قريبة من الحرم المكي: الموقع والمسافة والخريطة لكل فندق.">
+<link rel="icon" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://script.google.com">
+<script>
+window.__API='https://script.google.com/macros/s/AKfycbxRr2PYw2kkY9TiAGVT0MfswIBsxYPtrVuRBvXjzrOTVdr7ueGHOSLjHkUEZkshPmEOFg/exec';
+window.__op=fetch(window.__API+'?action=offers').then(function(r){return r.json()}).catch(function(){return null});
+</script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><a href="index.html" aria-label="همسة للسياحة"><img src="images/logo-header.webp" width="164" height="120" alt="همسة للسياحة" style="height:60px;display:block;width:auto"></a>
+<nav class="nv" aria-label="التنقل"><a href="index.html">الرئيسية</a><a href="offers.html">العروض</a><a href="hotels.html" aria-current="page">الفنادق</a><a href="gallery.html">الصور</a></nav>
+<span class="acts"><button id="adminBtn" type="button" hidden>لوحة التحكم</button> <button id="loginBtn" type="button">تسجيل الدخول</button></span></header>
+<div class="ph"><h1>فنادقنا</h1><p>فنادق مختارة قريبة من الحرم المكي، تختار منها على حسب فئتك وميزانيتك.</p></div>
+<main>
+<section aria-label="قائمة الفنادق">
+<div class="hf"><div class="tabs" id="stabs" role="group" aria-label="التصنيف"></div><input id="hq" type="search" placeholder="ابحث باسم الفندق أو الشارع" aria-label="بحث في الفنادق"></div>
+<div id="hg"></div></section>
+</main>
+<footer>همسة للسياحة — ترخيص رقم 2244 فئة (أ) · 37 ش بهاء الدين الغتوري، سيدي جابر، الإسكندرية<br>جميع الحقوق محفوظة ©</footer>
+<a class="btn wa" id="wa" target="_blank" rel="noopener">واتساب</a>
+
+<dialog id="hdlg" aria-label="تفاصيل الفندق"><button class="hx" type="button" aria-label="إغلاق">✕</button><div id="hbody"></div></dialog>
+<script src="common.js"></script>
+<script>
+// ===== فنادقنا =====
+// لإضافة فندق أو تعديله: عدّل السطر بتاعه هنا.
+//  n: الاسم   i: صورة (images/hotels/اسم.webp)   w: الشارع/المنطقة   q: نص البحث في الخريطة (لو عايز تحدد مكان أدق)
+//  f: مميزات الفندق  مثال  f: ['فطار مفتوح', 'واي فاي', 'مصعد']  (بتظهر في التفاصيل لو كتبتها)
+// وعلى مستوى المجموعة: d = القرب من الحرم، dist = المسافة، walk = مدة المشي (كلها تقريبية، راجعها بنفسك)
+const HOTELS = [
+  { s: 5, d: 'في برج الساعة', dist: 'قريب جدًا من الحرم', walk: 'من 3 لـ 5 دقايق', items: [{ n: 'الشهداء', i: 'images/hotels/shohada.webp' }, { n: 'الصفوة', i: 'images/hotels/safwa.webp', w: 'البرج الثالث' }, { n: 'موفنبيك', i: 'images/hotels/movenpick.webp' }] },
+  { s: 4, d: 'ضهر برج الساعة', dist: 'قريب من الحرم', walk: 'من 5 لـ 10 دقايق', items: [{ n: 'الماسة جراند', i: 'images/hotels/masa-grand.webp' }, { n: 'رمادا دار الفايزين', i: 'images/hotels/dar-alfaezeen.webp' }, { n: 'العليان أجياد', i: 'images/hotels/olayan-ajyad.webp', w: 'شارع أجياد' }] },
+  { s: 3, d: 'حوالي 600 متر من الحرم', dist: 'حوالي 600 متر', walk: 'من 8 لـ 10 دقايق', items: [{ n: 'أعمار آفاق', i: 'images/hotels/amaar-afaq.webp', w: 'شارع أجياد' }, { n: 'واحة الضيافة', i: 'images/hotels/waha-diyafa.webp', w: 'شارع أجياد' }] },
+  { s: 3, d: 'حوالي 1 كم من الحرم', dist: 'حوالي 1 كم', walk: 'من 12 لـ 15 دقيقة', items: [{ n: 'قصر العليان', i: 'images/hotels/qasr-olayan.webp', w: 'شارع أجياد' }, { n: 'أبراج الكسوة', i: 'images/hotels/kiswa.webp', w: 'شارع أجياد' }, { n: 'أبراج القصواء', i: 'images/hotels/qaswaa.webp', w: 'شارع أجياد' }, { n: 'سرايا الجوار', i: 'images/hotels/saraya-jiwar.webp', w: 'محبس الجن' }] }
+];
+const ALL = HOTELS.flatMap(g => g.items.map(h => ({ ...h, s: g.s, d: g.d, dist: g.dist, walk: g.walk })));
+const ico = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16"/><path d="M15 9h4a1 1 0 0 1 1 1v11"/><path d="M3 21h18"/><path d="M8 8h3M8 12h3M8 16h3"/></svg>';
+let OFFERS = [], fs = '', fq = '';
+try { OFFERS = JSON.parse(localStorage.getItem('hm_offers') || '[]') || []; } catch (e) {}
+const nm = s => String(s || '').replace(/فندق/g, '').replace(/\s+/g, ' ').trim();
+const offersOf = h => OFFERS.filter(o => o.hotel && nm(o.hotel).length > 2 && (nm(o.hotel).includes(nm(h.n)) || nm(h.n).includes(nm(o.hotel))));
+const mq = h => h.q || 'فندق ' + h.n + ' مكة المكرمة';
+const mapLink = h => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(mq(h));
+const mapEmbed = h => 'https://maps.google.com/maps?q=' + encodeURIComponent(mq(h)) + '&hl=ar&z=16&output=embed';
+const photo = h => `<div class="hph${h.i ? '' : ' no'}">${ico}${h.i ? `<img loading="lazy" decoding="async" alt="${esc(h.n)}" src="${esc(h.i)}" onerror="this.parentNode.classList.add('no');this.remove()">` : ''}<span class="hsb">${'★'.repeat(h.s)}</span></div>`;
+
+function paint() {
+  const q = fq.trim();
+  const out = HOTELS.map(g => {
+    if (fs && String(g.s) !== fs) return '';
+    const hs = g.items.map(h => ({ ...h, s: g.s, d: g.d, dist: g.dist, walk: g.walk })).filter(h => !q || (h.n + ' ' + (h.w || '') + ' ' + g.d).includes(q));
+    if (!hs.length) return '';
+    return `<div class="hgrp"><div class="hgh"><span class="st" aria-label="${g.s} نجوم">${'★'.repeat(g.s)}</span><h3>${g.s} نجوم</h3><span class="ds">${esc(g.d)}</span></div><div class="hl">` + hs.map(h => {
+      const k = ALL.findIndex(x => x.n === h.n), c = offersOf(h).length;
+      return `<article class="hc">${photo(h)}<div class="hb2"><h4>${esc(h.n)}</h4><span class="hw">${h.w ? esc(h.w) + ' · ' : ''}${esc(h.d)}</span>
+<ul class="hi"><li><span aria-hidden="true">🚶</span><span><b>${esc(h.walk)}</b> مشي تقريبًا</span></li><li><span aria-hidden="true">📍</span><span>${esc(h.dist)}</span></li></ul>${c ? `<span class="hoc">${c} ${c > 2 ? 'عروض' : 'عرض'} متاح</span>` : ''}
+<div class="hrow"><button type="button" data-h="${k}">التفاصيل</button><a class="btn o" target="_blank" rel="noopener" href="${esc(mapLink(h))}">الموقع على الخريطة</a></div></div></article>`;
+    }).join('') + '</div></div>';
+  }).join('');
+  $('#hg').innerHTML = out || '<p class="empty">مفيش فنادق بالشكل ده. جرّب تغيّر البحث.</p>';
+}
+const tabs = () => { $('#stabs').innerHTML = [['', 'كل الفنادق'], ['5', '5 نجوم'], ['4', '4 نجوم'], ['3', '3 نجوم']].map(([v, t]) => `<button type="button" data-s="${v}" class="${v === fs ? 'on' : ''}" aria-pressed="${v === fs}">${t}</button>`).join(''); };
+$('#stabs').onclick = e => { if (e.target.dataset.s === undefined) return; fs = e.target.dataset.s; tabs(); paint(); };
+$('#hq').oninput = e => { fq = e.target.value; paint(); };
+
+// ----- نافذة تفاصيل الفندق -----
+const dlg = $('#hdlg');
+function openHotel(k) {
+  const h = ALL[k]; if (!h) return; const offs = offersOf(h);
+  const row = (a, b) => b ? `<tr><th>${a}</th><td>${b}</td></tr>` : '';
+  $('#hbody').innerHTML = `<div class="hdh${h.i ? '' : ' no'}">${ico}${h.i ? `<img alt="${esc(h.n)}" src="${esc(h.i)}" onerror="this.parentNode.classList.add('no');this.remove()">` : ''}<span class="hsb">${'★'.repeat(h.s)}</span></div>
+<div class="hdb"><h2>${esc(h.n)}</h2>
+<div class="tw"><table class="hdt">${row('التصنيف', '★'.repeat(h.s) + ' (' + h.s + ' نجوم)')}${row('المدينة', 'مكة المكرمة')}${row('الشارع / المنطقة', esc(h.w || ''))}${row('القرب من الحرم', esc(h.d))}${row('المسافة من الحرم', esc(h.dist))}${row('مدة المشي', esc(h.walk) + ' (تقريبًا)')}</table></div>
+${h.f && h.f.length ? `<h3>المميزات</h3><ul class="hfeat">${h.f.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+<h3>الموقع على الخريطة</h3><iframe class="hmap" title="موقع ${esc(h.n)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="${esc(mapEmbed(h))}"></iframe>
+<p class="hnote">المسافات ومدة المشي تقريبية، وبتختلف حسب الزحمة ومكان الدخول للحرم.</p>
+${offs.length ? `<h3>العروض المتاحة في الفندق</h3><ul class="hol">${offs.map(o => `<li><a href="offers.html?q=${encodeURIComponent(o.title)}"><span>${esc(o.title)}</span><b>${esc(o.price || '')}</b></a></li>`).join('')}</ul>` : ''}
+<div class="hrow"><a class="btn" target="_blank" rel="noopener" href="${esc(mapLink(h))}">افتح في خرائط جوجل</a><a class="btn o" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent('استفسار عن فندق ' + h.n + ' (' + h.s + ' نجوم)')}">اسأل على واتساب</a></div></div>`;
+  dlg.showModal(); dlg.scrollTop = 0;
+}
+$('#hg').onclick = e => { const b = e.target.closest('[data-h]'); if (b) openHotel(+b.dataset.h); };
+dlg.querySelector('.hx').onclick = () => dlg.close();
+dlg.addEventListener('click', ev => { if (ev.target === dlg) dlg.close(); });
+dlg.addEventListener('close', () => { $('#hbody').innerHTML = ''; }); // يفضّي الخريطة عشان متفضلش شغالة
+
+tabs(); paint(); ui();
+(async () => {
+  let j = null; try { j = await (window.__op || fetch(API + '?action=offers').then(r => r.json())); } catch (e) {}
+  if (j && j.offers) { OFFERS = j.offers; try { localStorage.setItem('hm_offers', JSON.stringify(OFFERS)); } catch (e) {} paint(); }
+})();
+</script>
+</body>
+</html>

@@ -29,8 +29,10 @@ h1{margin:0 0 4px;font-size:1.5rem;text-align:center}
 form{display:grid;gap:12px}
 label{display:grid;gap:4px;font-size:.92rem;color:var(--mute)}
 input{font:inherit;font-size:16px;padding:10px 12px;min-height:46px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);width:100%}
-.pw{position:relative;display:block}.pw input{padding-inline-end:76px}
-.pw button{position:absolute;inset-inline-end:4px;top:50%;transform:translateY(-50%);padding:4px 10px;min-height:38px;font-size:.85rem;background:transparent;color:var(--g);border:0}
+.pw{display:flex;align-items:stretch;border:1px solid #e6d594;border-radius:8px;background:var(--card);overflow:hidden}
+.pw:focus-within{outline:3px solid var(--gold);outline-offset:2px}
+.pw input{flex:1;min-width:0;border:0;border-radius:0;outline:0}
+.pw button{flex:none;border:0;border-inline-start:1px solid #e6d594;border-radius:0;padding:0 16px;min-height:46px;font-size:.88rem;background:var(--tint);color:var(--g);font-weight:700;width:auto}
 button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--g2);background:var(--g2);color:#fff;padding:10px 16px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 button[type=submit]{width:100%;min-height:48px;font-weight:700;background:var(--y);border-color:var(--y);color:#14295f}
 @media(hover:hover){button[type=submit]:hover:not(:disabled){filter:brightness(1.07)}.seg button:not(.on):hover{background:#24448f1f}}
@@ -62,13 +64,13 @@ header a:hover{background:var(--tint)}
 .seg{background:var(--tint)}
 .seg button.on{background:var(--y);color:var(--hd);font-weight:700}
 button{background:var(--y);border-color:var(--y);color:var(--hd);font-weight:700}
-.pw button{background:transparent;border:0;color:var(--g);font-weight:500}
+.pw button{background:var(--tint);border:0;border-inline-start:1px solid #e6d594;color:var(--g);font-weight:700}
 input{border-color:#e6d594}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
-<header><span style="color:var(--g);font-weight:700">همسة للسياحة</span><a href="index.html">← الرجوع للعروض</a></header>
+<header><span style="color:var(--g);font-weight:700">همسة للسياحة</span><a href="index.html">← الرجوع للموقع</a></header>
 <div class="wrap">
 <div class="box">
   <img src="images/logo-login.webp" width="245" height="180" alt="همسة للسياحة" onerror="this.remove()">
@@ -86,17 +88,17 @@ input{border-color:#e6d594}
     <div id="err" class="msg" role="alert" hidden></div>
     <button type="submit" id="go">دخول</button>
   </form>
-  <p class="note" id="note">المدير والموظفين يدخلوا لوحة التحكم. الزائر يشوف العروض ويحجز.</p>
+  <p class="note" id="note" hidden></p>
 </div>
 </div>
 <script>
-// نفس رابط Apps Script اللي في index.html
+// نفس رابط Apps Script اللي في common.js
 const API = 'https://script.google.com/macros/s/AKfycbxRr2PYw2kkY9TiAGVT0MfswIBsxYPtrVuRBvXjzrOTVdr7ueGHOSLjHkUEZkshPmEOFg/exec';
 const $ = s => document.querySelector(s);
 let reg = false;
 
 // لو داخل بالفعل، حوّله على طول
-try { const m = JSON.parse(sessionStorage.getItem('me') || 'null'); if (m && sessionStorage.getItem('t')) location.replace(m.role === 'owner' ? 'index.html#admin' : 'index.html'); } catch (e) {}
+try { const m = JSON.parse(sessionStorage.getItem('me') || 'null'); if (m && sessionStorage.getItem('t')) location.replace(m.role === 'owner' ? 'offers.html#admin' : 'offers.html'); } catch (e) {}
 
 function mode(r) {
   reg = r;
@@ -106,7 +108,7 @@ function mode(r) {
   $('#uLbl').textContent = r ? 'الإيميل' : 'اسم المستخدم أو الإيميل';
   $('#p').autocomplete = r ? 'new-password' : 'current-password';
   $('#go').textContent = r ? 'إنشاء الحساب' : 'دخول';
-  $('#note').textContent = r ? 'الحساب الجديد للزوار فقط: تشوف العروض وتحجز وتحفظ المفضلة. كلمة السر 8 حروف أو أكتر.' : 'المدير والموظفين يدخلوا لوحة التحكم. الزائر يشوف العروض ويحجز.';
+  $('#note').textContent = 'الحساب الجديد للزوار فقط: تشوف العروض وتحجز وتحفظ المفضلة. كلمة السر 8 حروف أو أكتر.'; $('#note').hidden = !r;
   $('#err').hidden = true;
 }
 $('#tLogin').onclick = () => mode(false);
@@ -128,7 +130,7 @@ $('#f').onsubmit = async e => {
     const r = await call('login', { u: f.u, p: f.p });
     sessionStorage.setItem('t', r.token);
     sessionStorage.setItem('me', JSON.stringify({ name: r.name, role: r.role }));
-    location.replace(r.role === 'owner' ? 'index.html#admin' : 'index.html');
+    location.replace(r.role === 'owner' ? 'offers.html#admin' : 'offers.html');
   } catch (x) {
     err.hidden = false;
     err.textContent = /fetch|NetworkError|JSON|Failed/i.test(x.message) ? 'مشكلة في الاتصال. جرّب تاني.' : x.message;

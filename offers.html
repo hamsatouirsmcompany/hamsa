@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>العروض | همسة للسياحة</title>
+<meta name="description" content="عروض الحج والعمرة من همسة للسياحة: عمرة الكاش، عمرة التيسير، الحج.">
+<link rel="icon" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://script.google.com">
+<script>
+window.__API='https://script.google.com/macros/s/AKfycbxRr2PYw2kkY9TiAGVT0MfswIBsxYPtrVuRBvXjzrOTVdr7ueGHOSLjHkUEZkshPmEOFg/exec';
+window.__op=fetch(window.__API+'?action=offers').then(function(r){return r.json()}).catch(function(){return null});
+</script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><a href="index.html" aria-label="همسة للسياحة"><img src="images/logo-header.webp" width="164" height="120" alt="همسة للسياحة" style="height:60px;display:block;width:auto"></a>
+<nav class="nv" aria-label="التنقل"><a href="index.html">الرئيسية</a><a href="offers.html" aria-current="page">العروض</a><a href="hotels.html">الفنادق</a><a href="gallery.html">الصور</a></nav>
+<span class="acts"><button id="adminBtn" type="button" hidden>لوحة التحكم</button> <button id="loginBtn" type="button">تسجيل الدخول</button></span></header>
+<div class="ph"><h1>عروضنا</h1><p>عمرة الكاش · عمرة التيسير · الحج — اختار البرنامج المناسب ليك واحجز أونلاين.</p></div>
+<main id="site">
+<section id="offers" style="margin-top:0"><div class="tabs" id="tabs"></div>
+<div class="filters"><input id="q" placeholder="ابحث في العروض" aria-label="بحث">
+<input id="maxp" type="number" min="0" inputmode="numeric" placeholder="أقصى سعر (ج.م)" aria-label="أقصى سعر">
+<select id="stars" aria-label="النجوم"><option value="">كل التصنيفات</option><option>5</option><option>4</option><option>3</option></select>
+<select id="city" aria-label="المدينة"><option value="">مكة والمدينة</option><option>مكة</option><option>المدينة</option></select></div>
+<div id="info"></div><div class="grid" id="list"><p class="empty">جاري تحميل العروض...</p></div></section>
+
+<section id="pay" aria-labelledby="pt" hidden><h2 id="pt">الدفع عن طريق البنك</h2><p class="gsub">حوّل على حساب الشركة وابعتلنا صورة الإيصال، وإحنا نأكد حجزك.</p>
+<ol class="pst"><li><i>1</i>حوّل مبلغ الحجز على حساب الشركة</li><li><i>2</i>ابعت صورة الإيصال على واتساب مع اسمك واسم العرض</li><li><i>3</i>نأكد استلام المبلغ ونثبّت حجزك</li></ol>
+<div class="bl" id="bl"></div>
+<p class="pnote"><b>مهم:</b> التحويل بيتم على الحسابات المكتوبة هنا بس. لو حد طلب منك التحويل على حساب تاني، كلمنا الأول. واحتفظ بصورة الإيصال لحد ما حجزك يتأكد.</p>
+<a class="btn" id="payWa" target="_blank" rel="noopener">ابعت إيصال التحويل على واتساب</a></section>
+<section id="contact"><h2>سجّل اهتمامك وهنكلمك</h2>
+<form class="f" id="lead">
+<input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+<label>الاسم بالكامل *<input name="name" required maxlength="100"></label>
+<label>رقم الموبايل *<input name="phone" type="tel" required inputmode="tel"></label>
+<label>المحافظة<input name="governorate"></label>
+<label>العرض المطلوب<select name="service" id="svc"><option value="">اختر العرض</option></select></label>
+<label>عدد الأشخاص<input name="people" type="number" min="1" inputmode="numeric"></label>
+<label>موعد السفر المتوقع<input name="travelDate"></label>
+<label>طريقة الدفع<select name="payment"><option value="">اختر</option><option>كاش</option><option>تقسيط</option><option>لم أحدد بعد</option></select></label>
+<label class="w">ملاحظات<textarea name="notes" rows="2" maxlength="300"></textarea></label>
+<div class="w"><button>إرسال الطلب</button><div id="leadMsg" role="status"></div></div></form></section>
+</main>
+
+<main id="admin" hidden>
+<div class="tabs" id="atabs"></div><div id="aview"></div>
+</main>
+
+<footer>همسة للسياحة — ترخيص رقم 2244 فئة (أ) · 37 ش بهاء الدين الغتوري، سيدي جابر، الإسكندرية<br>جميع الحقوق محفوظة ©</footer>
+<a class="btn wa" id="wa" target="_blank" rel="noopener">واتساب</a>
+
+<dialog id="dlg"><form method="dialog" id="dform" style="display:grid;gap:10px"></form></dialog>
+<dialog id="bdlg"><form id="bform" style="display:grid;gap:10px"><h2 id="bt">احجز العرض</h2>
+<label>الاسم بالكامل *<input name="name" required maxlength="100" autocomplete="name"></label>
+<label>رقم الموبايل *<input name="phone" type="tel" required inputmode="tel" autocomplete="tel"></label>
+<label>المحافظة<input name="governorate"></label>
+<label>نوع الحجز<select name="room" id="broom"></select></label>
+<label>عدد الأفراد<input name="n" type="number" min="1" value="1" inputmode="numeric"></label>
+<label>طريقة الدفع<select name="payment"><option>كاش</option><option>تقسيط</option><option>لم أحدد بعد</option></select></label>
+<label>ملاحظات<textarea name="notes" rows="2" maxlength="200"></textarea></label>
+<input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+<div id="bmsg" class="msg" hidden></div><div><button id="bgo">تأكيد الحجز</button> <button type="button" class="o" onclick="bdlg.close()">إلغاء</button></div></form></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+<dialog id="idlg"><button onclick="idlg.close()">إغلاق ✕</button><img alt=""></dialog>
+
+<script src="common.js"></script>
+<script>
+
+// ضع هنا رابط الـ Web app بعد ما تنشره من Apps Script
+const CATS = { cash: 'عمرة الكاش', tayseer: 'عمرة التيسير', hajj: 'الحج' };
+let favs = new Set(), offers = [], cat = 'cash';
+const QP = new URLSearchParams(location.search);
+if (QP.get('cat') in CATS) cat = QP.get('cat');
+if (QP.get('q')) $('#q').value = QP.get('q');
+const PIC = { cash: ['kaaba-sky', 'haram-crowd', 'kaaba-day'], tayseer: ['madinah-sunset', 'nabawi-minarets', 'madinah-lamp'], hajj: ['kaaba-aerial', 'hajar-aswad', 'nabawi-towers'] };
+function safeImg(u) { return /^(https:\/\/|images\/)/.test(u) ? u : ''; }
+function pic(o) { if (safeImg(o.image)) return o.image; const a = PIC[o.category] || PIC.cash; let h = 0; for (const c of String(o.title)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return 'images/' + a[h % a.length] + '.webp'; }
+
+// ----- العروض للزوار -----
+function paintPublic() {
+  if (!paintPublic.d) { paintPublic.d = 1; const q0 = $('#q').value.trim(); if (q0 && !QP.get('cat')) { const m = offers.find(o => JSON.stringify(o).includes(q0)); if (m) cat = m.category; } }
+  $('#tabs').innerHTML = Object.entries(CATS).map(([k, v]) => `<button data-c="${k}" class="${k === cat ? 'on' : ''}">${v}</button>`).join('');
+  $('#svc').innerHTML = '<option value="">اختر العرض</option>' + offers.map(o => `<option>${esc(o.title)}</option>`).join('');
+  render();
+}
+async function load() {
+  let cached = null; try { cached = JSON.parse(localStorage.getItem('hm_offers') || 'null'); } catch (e) {}
+  if (cached && cached.length) { offers = cached; paintPublic(); } // عرض فوري من آخر زيارة
+  let j = null;
+  try { j = await (window.__op || fetch(API + '?action=offers').then(r => r.json())); } catch (e) {}
+  window.__op = null;
+  if (j && j.offers) { offers = j.offers; try { localStorage.setItem('hm_offers', JSON.stringify(offers)); } catch (e) {} }
+  else if (!offers.length) { $('#list').innerHTML = '<p class="empty">تعذّر تحميل العروض. تواصل معنا على واتساب.</p>'; return; }
+  paintPublic();
+}
+const ROOM = /^(الرباعي|رباعي|الثلاثي|ثلاثي|الثنائي|ثنائي|السينجل|سينجل|الطفل|طفل|الرضيع|رضيع)\s*[:：]\s*([\d,]+)/;
+const DT = /^موعد العمرة\s*[:：]\s*(\d{4}-\d{2}-\d{2})(?:\s*إلى\s*(\d{4}-\d{2}-\d{2}))?\s*$/;
+const fd = (i, y) => new Date(i + 'T00:00:00').toLocaleDateString('ar-EG-u-nu-latn', y ? { day: 'numeric', month: 'long', year: 'numeric' } : { day: 'numeric', month: 'long' });
+const rng = dt => dt[1] ? 'من ' + fd(dt[0], dt[0].slice(0, 4) !== dt[1].slice(0, 4)) + ' إلى ' + fd(dt[1], true) : fd(dt[0], true);
+function parse(o) { const pr = [], rest = []; let dt = null; String(o.details || '').split('\n').forEach(l => { l = l.trim(); const m = l.match(ROOM), d = l.match(DT); if (m) pr.push([m[1].replace(/^ال/, ''), m[2]]); else if (d && !dt) dt = [d[1], d[2] || '']; else if (l) rest.push(l); }); return { pr, rest, dt }; }
+const card = o => { const { pr, rest, dt } = parse(o); return `<article class="fc"><div class="fh${safeImg(o.image) ? ' im' : ''}"><img loading="lazy" decoding="async" alt="${esc(o.title)}" data-zoom="1" src="${esc(pic(o))}">${o.duration ? `<span class="bd">${esc(o.duration)}</span>` : ''}</div><div class="fb">
+<h3>${esc(o.title)}</h3><div class="meta">${[o.hotel, o.stars ? '★'.repeat(o.stars) : '', o.airline].filter(Boolean).map(esc).join(' · ')}</div>
+${dt ? `<div class="dt"><span aria-hidden="true">📅</span> موعد العمرة: ${esc(rng(dt))}</div>` : ''}<ul>${rest.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
+${pr.length ? `<div class="pg">${pr.map(x => `<i>${esc(x[0])}<b>${esc(x[1])}</b>جنيه</i>`).join('')}</div>` : `<div class="price">${esc(o.price)}</div>`}
+<div class="row"><button class="bk" data-book="${esc(o.id)}">احجز الآن</button><button class="o" data-fav="${esc(o.id)}" aria-label="المفضلة" aria-pressed="${favs.has(o.id)}">${favs.has(o.id) ? '♥' : '♡'}</button><a class="btn o" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent('استفسار عن: ' + o.title)}">واتساب</a></div></div></article>`; };
+const TY = '<div class="ty"><div class="th"><h3>عمرة التيسير</h3><p>بتطلع عمرة بنفس سعر الكاش</p><ul class="tp"><li>من غير مقدم</li><li>من غير فوايد</li><li>من غير مصاريف إدارية</li></ul></div><div class="tbd"><div class="plans"><div class="pl"><small>قسط لمدة</small><b>24 شهر</b><div class="am"><span>1000</span><span>1250</span><span>1500</span></div><small>جنيه في الشهر، يبدأ من</small></div><div class="pl"><small>قسط لمدة</small><b>12 شهر</b><div class="am"><span>2000</span><span>2500</span><span>3000</span></div><small>جنيه في الشهر، يبدأ من</small></div></div><ol class="sp"><li><i>1</i>تختار الوقت اللي يناسبك</li><li><i>2</i>تختار البرنامج</li><li><i>3</i>تدفع الفرق بين أقساطك وسعر البرنامج</li></ol><div class="dr"><span aria-hidden="true">🎁</span><div><b>قرعة كل 3 شهور</b><br>8 قرعات خلال 24 شهر، و4 قرعات خلال 12 شهر</div></div><div class="ex"><b>مثال</b>قسط 1500 × 24 شهر = <b class="n">36,000</b> جنيه. لو البرنامج 40,000 تدفع الفرق <b class="n">4,000</b> جنيه كاش وتسافر.</div></div></div>';
+function render() {
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.c === cat));
+  const q = $('#q').value.trim(), mp = +$('#maxp').value, st = $('#stars').value, ct = $('#city').value;
+  const l = offers.filter(o => o.category === cat && (!q || JSON.stringify(o).includes(q)) && (!mp || !o.priceFrom || o.priceFrom <= mp) && (!st || String(o.stars) === st) && (!ct || String(o.city).includes(ct)));
+  $('#info').innerHTML = cat === 'tayseer' ? TY : '';
+  $('#list').innerHTML = l.length ? l.map(card).join('') : '<p class="empty">مفيش عروض بالشكل ده دلوقتي. جرّب تغيّر الفلاتر أو كلّمنا على واتساب.</p>';
+}
+$('#tabs').onclick = e => { if (e.target.dataset.c) { cat = e.target.dataset.c; render(); } };
+let _rt; const _dr = () => { clearTimeout(_rt); _rt = setTimeout(render, 150); };
+['#q', '#maxp'].forEach(s => $(s).oninput = _dr); ['#stars', '#city'].forEach(s => $(s).oninput = render);
+$('#list').onclick = e => { if (e.target.dataset.zoom && e.target.closest('.im')) { $('#idlg img').src = e.target.src; return idlg.showModal(); } const bk = e.target.dataset.book; if (bk) return openBook(bk); const f = e.target.dataset.fav; if (f) return toggleFav(f); const t = e.target.dataset.ask; if (t) { $('#svc').value = t; $('#contact').scrollIntoView(); $('[name=name]').focus(); } };
+
+$('#lead').onsubmit = async e => {
+  e.preventDefault(); const m = $('#leadMsg');
+  try { await api('lead', Object.fromEntries(new FormData(e.target))); e.target.reset(); m.className = 'msg ok'; m.textContent = 'وصل طلبك، هنكلمك قريب بإذن الله.'; }
+  catch (x) { m.className = 'msg er'; m.textContent = x.message; }
+};
+
+window.onLogout = () => { window._o = null; adm.sel.clear(); favs = new Set(); render(); };
+async function loadFavs() { if (!me) return; try { favs = new Set((await api('favs')).ids); } catch (x) {} render(); }
+async function toggleFav(id) { if (!me) { location.href = 'login.html'; return; } try { favs = new Set((await api('toggleFav', { id })).ids); } catch (x) { alert(x.message); } render(); if (!$('#admin').hidden && me.role === 'visitor') aTab('fav'); }
+function showAdmin(on) { if (on && (!me || me.role === 'staff')) on = false; $('#admin').hidden = !on; $('#site').hidden = on; if (on) { const t = me.role === 'visitor' ? [['fav', 'المفضلة'], ['mine', 'طلباتي']] : [['offers', 'العروض'], ['leads', 'الطلبات']]; if (me.role === 'owner') t.push(['users', 'الموظفين']);
+  $('#atabs').innerHTML = t.map(x => `<button data-a="${x[0]}">${x[1]}</button>`).join('') + ' <button class="o" id="back">رجوع للموقع</button>'; $('#back').onclick = () => showAdmin(false); aTab(t[0][0]); } }
+$('#adminBtn').onclick = () => showAdmin($('#admin').hidden);
+$('#atabs').onclick = e => e.target.dataset.a && aTab(e.target.dataset.a);
+
+// ----- لوحة التحكم -----
+const ROOMS = ['رباعي', 'ثلاثي', 'ثنائي', 'سينجل', 'طفل', 'رضيع'];
+const ROOMF = /^(?:ال)?(رباعي|ثلاثي|ثنائي|سينجل|طفل|رضيع)\s*[:：]\s*([\d,]+)\s*$/;
+const adm = { q: '', c: '', s: '', sel: new Set(), pend: 0 };
+const fmt = n => Number(n).toLocaleString('en-US');
+const byId = id => (window._o || []).find(o => o.id === id);
+const newId = () => crypto.randomUUID ? crypto.randomUUID() : 'o' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+function toast(m, bad) { const t = $('#toast'); t.textContent = m; t.className = 'show' + (bad ? ' bad' : ''); clearTimeout(toast.h); toast.h = setTimeout(() => t.className = '', bad ? 5000 : 2200); }
+function split(o) { const rooms = {}, rest = []; String(o.details || '').split('\n').forEach(l => { const t = l.trim(), m = t.match(ROOMF); if (m && !(m[1] in rooms)) rooms[m[1]] = m[2].replace(/,/g, ''); else if (t) rest.push(t); }); return { rooms, rest }; }
+const build = (rest, rooms) => rest.concat(ROOMS.filter(r => +rooms[r] > 0).map(r => r + ': ' + rooms[r])).join('\n');
+function lowest(rooms) { for (const r of ['رباعي', 'ثلاثي', 'ثنائي', 'سينجل']) if (+rooms[r] > 0) return +rooms[r]; return 0; }
+function syncPublic() { offers = window._o.filter(o => o.status === 'active'); $('#svc').innerHTML = '<option value="">اختر العرض</option>' + offers.map(o => `<option>${esc(o.title)}</option>`).join(''); render(); }
+// تعديل متفائل: الشاشة تتغير فورًا والحفظ في الخلفية، ولو فشل بيرجّع القديم
+async function patch(items, okMsg) {
+  const snap = items.map(it => ({ ...byId(it.id) }));
+  items.forEach(it => Object.assign(byId(it.id), it));
+  adm.pend++; drawTable(); drawBulk(); syncPublic();
+  try { await api('patchOffers', { items }); toast(okMsg || '✓ تم الحفظ'); }
+  catch (x) { snap.forEach(s => Object.assign(byId(s.id), s)); drawTable(); drawBulk(); syncPublic(); toast(x.message, true); }
+  finally { adm.pend--; }
+}
+function visibleOffers() { const q = adm.q.toLowerCase(); return window._o.filter(o => (!adm.c || o.category === adm.c) && (!adm.s || (adm.s === 'active') === (o.status === 'active')) && (!q || [o.title, o.price, o.airline, o.city, o.hotel, o.duration].join(' ').toLowerCase().includes(q))); }
+function drawTable() {
+  const l = visibleOffers(), owner = me.role === 'owner', box = $('#otable'); if (!box) return;
+  const row = o => { const on = o.status === 'active', id = esc(o.id); return `<tr class="${on ? '' : 'off'}"><td><input type="checkbox" data-sel="${id}"${adm.sel.has(o.id) ? ' checked' : ''} aria-label="تحديد"></td>
+<td><b>${esc(o.title)}</b><br><small>${CATS[o.category] || ''}${o.updatedBy ? ' · ' + esc(o.updatedBy) : ''}</small></td><td>${esc(o.price)}</td>
+<td>${owner ? `<button class="sw${on ? ' on' : ''}" data-act="tg" data-id="${id}" aria-pressed="${on}">${on ? 'ظاهر' : 'مخفي'}</button>` : (on ? 'ظاهر' : 'مخفي')}</td>
+<td class="ac"><button class="o" data-act="ed" data-id="${id}">تعديل</button> <button class="o" data-act="cp" data-id="${id}">نسخ</button></td></tr>`; };
+  box.innerHTML = '<div class="tw"><table><tr><th><input type="checkbox" id="selall" aria-label="تحديد الكل"' + (l.length && l.every(o => adm.sel.has(o.id)) ? ' checked' : '') + '></th><th>العرض</th><th>السعر</th><th>الحالة</th><th></th></tr>' +
+    (l.length ? l.map(row).join('') : '<tr><td colspan=5 class="empty">مفيش عروض بالشكل ده.</td></tr>') + '</table></div><p class="meta">' + l.length + ' عرض</p>';
+}
+function drawBulk() {
+  const b = $('#bulk'); if (!b) return; adm.sel.forEach(id => { if (!byId(id)) adm.sel.delete(id); });
+  if (!adm.sel.size) { b.innerHTML = ''; return; }
+  const keep = b.querySelector('#bpv') ? { v: $('#bpv').value, m: $('#bpm').value, u: $('#bpu').value, i: $('#bpi').checked } : { v: '', m: '1', u: '', i: false };
+  b.innerHTML = `<div class="bulk"><b>المحدد: ${adm.sel.size}</b>${me.role === 'owner' ? ' <button class="d" data-act="bs" data-s="hidden">إخفاء</button> <button data-act="bs" data-s="active">إظهار</button>' : ''}
+<span class="meta">| الأسعار:</span><select id="bpm"><option value="1">زيادة</option><option value="-1">خفض</option></select><input id="bpv" type="number" min="0" step="any" placeholder="القيمة" style="width:90px"><select id="bpu"><option value="">ج.م</option><option value="%">%</option></select>
+<label style="display:inline-flex;grid-auto-flow:column;align-items:center;gap:4px"><input type="checkbox" id="bpi" style="width:auto">شمل الرضيع</label><button data-act="bp">تطبيق</button> <button class="o" data-act="bc">إلغاء التحديد</button></div>`;
+  $('#bpv').value = keep.v; $('#bpm').value = keep.m; $('#bpu').value = keep.u; $('#bpi').checked = keep.i;
+}
+function bulkStatus(s) { const ids = [...adm.sel]; adm.sel.clear(); patch(ids.map(id => ({ id, status: s })), (s === 'active' ? '✓ اتظهر ' : '✓ اتخفى ') + ids.length + ' عرض'); }
+function bulkPrice() {
+  const val = parseFloat($('#bpv').value) * +$('#bpm').value, pct = $('#bpu').value === '%', inf = $('#bpi').checked;
+  if (!val) return toast('اكتب القيمة الأول', true);
+  const items = []; let skip = 0;
+  adm.sel.forEach(id => { const o = byId(id), { rooms, rest } = split(o), ks = Object.keys(rooms);
+    if (!ks.length) { skip++; return; }
+    ks.forEach(r => { if (r === 'رضيع' && !inf) return; const n = +rooms[r]; rooms[r] = String(Math.max(0, Math.round(pct ? Math.round(n * (1 + val / 100) / 10) * 10 : n + val))); });
+    const it = { id, details: build(rest, rooms) }, low = lowest(rooms);
+    if (low) { it.priceFrom = low; if (!o.price || /^تبدأ من/.test(o.price)) it.price = 'تبدأ من ' + fmt(low) + ' ج.م'; }
+    items.push(it); });
+  if (!items.length) return toast('العروض المحددة مفيهاش أسعار غرف (رباعي/ثلاثي...)', true);
+  if (!confirm('هيتعدّل سعر ' + items.length + ' عرض' + (skip ? ' (وهيتخطّى ' + skip + ' من غير أسعار غرف)' : '') + '. تكمّل؟')) return;
+  adm.sel.clear(); patch(items, '✓ اتعدّلت أسعار ' + items.length + ' عرض');
+}
+function paintOffers() {
+  const v = $('#aview');
+  v.innerHTML = `<div class="tb"><button onclick="editOffer()">+ عرض جديد</button><input id="aq" type="search" placeholder="ابحث في العروض..." value="${esc(adm.q)}"><select id="ac"><option value="">كل الأقسام</option>${Object.entries(CATS).map(([k, t]) => `<option value="${k}"${k === adm.c ? ' selected' : ''}>${t}</option>`).join('')}</select><select id="as"><option value="">ظاهر ومخفي</option><option value="active"${adm.s === 'active' ? ' selected' : ''}>الظاهر بس</option><option value="hidden"${adm.s === 'hidden' ? ' selected' : ''}>المخفي بس</option></select></div><div id="bulk"></div><div id="otable"></div>`;
+  v.onclick = e => { const b = e.target.closest('[data-act]'); if (!b) return; const a = b.dataset.act, id = b.dataset.id;
+    if (a === 'tg') { const on = byId(id).status === 'active'; patch([{ id, status: on ? 'hidden' : 'active' }], on ? '✓ اتخفى' : '✓ اتظهر'); }
+    else if (a === 'ed') editOffer(id); else if (a === 'cp') editOffer(id, true);
+    else if (a === 'bs') bulkStatus(b.dataset.s); else if (a === 'bp') bulkPrice();
+    else if (a === 'bc') { adm.sel.clear(); drawTable(); drawBulk(); } };
+  v.onchange = e => { const t = e.target;
+    if (t.id === 'ac') { adm.c = t.value; drawTable(); } else if (t.id === 'as') { adm.s = t.value; drawTable(); }
+    else if (t.dataset.sel !== undefined) { t.checked ? adm.sel.add(t.dataset.sel) : adm.sel.delete(t.dataset.sel); drawBulk(); const a = $('#selall'), l = visibleOffers(); if (a) a.checked = l.length > 0 && l.every(o => adm.sel.has(o.id)); }
+    else if (t.id === 'selall') { visibleOffers().forEach(o => t.checked ? adm.sel.add(o.id) : adm.sel.delete(o.id)); drawTable(); drawBulk(); } };
+  v.oninput = e => { if (e.target.id === 'aq') { adm.q = e.target.value.trim(); drawTable(); } };
+  drawTable(); drawBulk();
+}
+async function offersTab() {
+  const v = $('#aview'), had = !!window._o;
+  if (had) paintOffers(); else v.innerHTML = '<p class="empty">جاري التحميل...</p>';
+  try {
+    const l = (await api('allOffers')).offers; if (v.dataset.t !== 'offers') return;
+    if (had) { if (!adm.pend) { window._o = l; drawTable(); drawBulk(); } } else { window._o = l; paintOffers(); }
+  } catch (x) { if (!had) v.innerHTML = `<p class="msg er">${esc(x.message)}</p>`; else toast(x.message, true); }
+}
+async function saveOffer(d) {
+  const prev = byId(d.id) ? { ...byId(d.id) } : null;
+  const loc = { ...(prev || {}), ...d, updatedBy: me.name };
+  if (prev) Object.assign(byId(d.id), loc); else window._o.unshift(loc);
+  adm.pend++; drawTable(); syncPublic(); toast('جاري الحفظ…');
+  try { await api('saveOffer', { offer: d }); toast('✓ تم الحفظ'); }
+  catch (x) { const j = window._o.findIndex(o => o.id === d.id); if (prev) window._o[j] = prev; else window._o.splice(j, 1); drawTable(); syncPublic(); toast('ما اتحفظش: ' + x.message, true); }
+  finally { adm.pend--; }
+}
+async function aTab(t) {
+  const v = $('#aview'); v.onclick = v.onchange = v.oninput = null; v.dataset.t = t;
+  if (t === 'offers') return offersTab();
+  v.innerHTML = '<p class="empty">جاري التحميل...</p>';
+  try {
+    if (t === 'fav') {
+      v.innerHTML = '<div class="grid">' + (offers.filter(o => favs.has(o.id)).map(card).join('') || '<p class="empty">لسه ما حفظتش عروض. دوس على ♡ في أي عرض.</p>') + '</div>';
+      v.onclick = e => { if (e.target.dataset.fav) toggleFav(e.target.dataset.fav); else if (e.target.dataset.ask) { showAdmin(false); $('#svc').value = e.target.dataset.ask; $('#contact').scrollIntoView(); } };
+    } else if (t === 'mine') {
+      const l = (await api('myLeads')).leads;
+      v.innerHTML = '<div class="tw"><table><tr><th>العرض</th><th>التاريخ</th><th>الحالة</th></tr>' + (l.length ? l.map(x => `<tr><td>${esc(x.service)}</td><td>${esc(String(x.time).slice(0, 10))}</td><td>${esc(x.status)}</td></tr>`).join('') : '<tr><td colspan=3 class="empty">لسه ما بعتش طلبات. ابعت طلب من الموقع وهيظهر هنا.</td></tr>') + '</table></div>';
+    } else if (t === 'leads') {
+      const l = (await api('leads')).leads;
+      v.innerHTML = '<div class="tw"><table><tr><th>الاسم</th><th>الموبايل</th><th>العرض</th><th>أشخاص</th><th>موعد</th><th>دفع</th><th>ملاحظات</th><th>الحالة</th></tr>' + (l.length ? l.map(x => `<tr><td>${esc(x.name)}<br><small>${esc(String(x.time).slice(0, 10))}</small></td><td><a href="tel:${esc(x.phone)}">${esc(x.phone)}</a></td><td>${esc(x.service)}</td><td>${esc(x.people)}</td><td>${esc(x.travelDate)}</td><td>${esc(x.payment)}</td><td>${esc(x.notes)}</td>
+<td><select onchange="api('leadStatus',{id:'${x.id}',status:this.value})">${['جديد', 'تم التواصل', 'تم الحجز', 'ملغي'].map(s => `<option${s === x.status ? ' selected' : ''}>${s}</option>`).join('')}</select></td></tr>`).join('') : '<tr><td colspan=8 class="empty">لسه مفيش طلبات.</td></tr>') + '</table></div>';
+    } else {
+      const l = (await api('users')).users;
+      v.innerHTML = '<form class="f" onsubmit="addU(event)"><label>الاسم<input name="name" required></label><label>اسم المستخدم (إنجليزي)<input name="username" required></label><label>كلمة السر (8+ حروف)<input name="password" type="password" minlength="8" required></label><div class="w"><button>إضافة موظف</button></div></form><div class="tw"><table><tr><th>الاسم</th><th>المستخدم</th><th>الدور</th><th>الحالة</th><th></th></tr>' +
+        l.map(u => `<tr><td>${esc(u.name)}</td><td>${esc(u.username)}</td><td>${u.role === 'owner' ? 'مدير رئيسي' : 'موظف'}</td><td>${u.active ? 'شغّال' : 'موقوف'}</td><td>${u.role === 'owner' ? '' : `<button class="o" onclick="actU('${esc(u.username)}',${!u.active})">${u.active ? 'إيقاف' : 'تفعيل'}</button>`}</td></tr>`).join('') + '</table></div>';
+    }
+  } catch (x) { v.innerHTML = `<p class="msg er">${esc(x.message)}</p>`; }
+}
+window.editOffer = (id, copy) => {
+  const o = id ? { ...byId(id) } : { category: adm.c || cat, status: 'active' };
+  if (copy) { o.id = ''; o.title = o.title + ' (نسخة)'; o.status = 'active'; }
+  const { rooms, rest } = split(o), DI = rest.findIndex(l => DT.test(l)), DM = DI >= 0 ? rest.splice(DI, 1)[0].match(DT) : null, I = (k, n, x = '') => `<label>${n}<input name="${k}" value="${esc(o[k])}" ${x}></label>`;
+  $('#dform').innerHTML = `<h2>${copy ? 'نسخ عرض' : o.id ? 'تعديل عرض' : 'عرض جديد'}</h2>` +
+    `<label>العنوان *<input name="title" value="${esc(o.title)}" required></label>` +
+    `<div class="g2"><label>القسم<select name="category">${Object.entries(CATS).map(([c, t]) => `<option value="${c}"${c === o.category ? ' selected' : ''}>${t}</option>`).join('')}</select></label>${I('duration', 'المدة')}</div>` +
+    `<div class="g2"><label>تاريخ العمرة (من)<input type="date" name="d1" value="${DM ? DM[1] : ''}"></label><label>إلى (اختياري)<input type="date" name="d2" value="${DM && DM[2] ? DM[2] : ''}"></label></div>` +
+    `<fieldset class="rm"><legend>أسعار الغرف (جنيه) — سيب اللي مش موجود فاضي</legend><div class="g3">${ROOMS.map(r => `<label>${r}<input name="r_${r}" type="number" min="0" inputmode="numeric" value="${esc(rooms[r] ?? '')}"></label>`).join('')}</div></fieldset>` +
+    `<div class="g2">${I('price', 'السعر (نص يظهر للزائر)')}${I('priceFrom', 'أقل سعر (رقم للفلتر)', 'type="number" min="0"')}</div>` +
+    `<div class="meta">لو كتبت أسعار الغرف: «أقل سعر» و«تبدأ من» بيتحدثوا لوحدهم من سعر الرباعي.</div>` +
+    `<label>تفاصيل تانية (سطر لكل بند)<textarea name="details" rows="5">${esc(rest.join('\n'))}</textarea></label>` +
+    `<div class="g2">${I('hotel', 'الفندق')}${I('stars', 'النجوم (3-5)', 'type="number" min="1" max="5"')}</div><div class="g2">${I('city', 'المدينة')}${I('airline', 'شركة الطيران')}</div>` +
+    I('image', 'رابط صورة (اختياري — لو سبته فاضي هتظهر صورة تلقائية)') +
+    '<div id="dmsg" class="er msg" hidden></div><div><button value="x">حفظ</button> <button type="button" class="o" onclick="dlg.close()">إلغاء</button> <small class="meta">Ctrl+Enter للحفظ</small></div>';
+  const f0 = $('#dform');
+  f0.onkeydown = e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); f0.requestSubmit(); } };
+  f0.onsubmit = e => {
+    e.preventDefault(); const f = Object.fromEntries(new FormData(e.target)), m = $('#dmsg'), err = x => { m.hidden = false; m.textContent = x; };
+    if (!f.title.trim()) return err('اكتب عنوان العرض');
+    if (f.image && !/^(https:\/\/|images\/)/.test(f.image)) return err('رابط الصورة لازم يبدأ بـ https:// أو images/');
+    const d1 = f.d1 || '', d2 = f.d2 || '';
+    if (d2 && !d1) return err('اكتب تاريخ بداية العمرة');
+    if (d1 && d2 && d2 < d1) return err('تاريخ النهاية قبل تاريخ البداية');
+    const rm = {}; ROOMS.forEach(r => { const n = Math.round(+f['r_' + r]); if (n > 0) rm[r] = String(n); });
+    const d = { id: o.id || newId(), title: f.title.trim(), category: f.category, duration: f.duration, hotel: f.hotel, stars: f.stars ? +f.stars : '', city: f.city, airline: f.airline, image: f.image,
+      details: build((d1 ? ['موعد العمرة: ' + d1 + (d2 ? ' إلى ' + d2 : '')] : []).concat(f.details.split('\n').map(s => s.trim()).filter(Boolean)), rm), price: f.price, priceFrom: +f.priceFrom || 0, status: o.status }, low = lowest(rm);
+    if (low) { if (String(o.priceFrom ?? '') === f.priceFrom) d.priceFrom = low; if (!f.price || (f.price === String(o.price ?? '') && /^تبدأ من/.test(f.price))) d.price = 'تبدأ من ' + fmt(low) + ' ج.م'; }
+    dlg.close(); saveOffer(d);
+  };
+  dlg.showModal();
+};
+window.addU = async e => { e.preventDefault(); try { await api('addUser', Object.fromEntries(new FormData(e.target))); aTab('users'); } catch (x) { alert(x.message); } };
+window.actU = async (username, active) => { try { await api('setActive', { username, active }); aTab('users'); } catch (x) { alert(x.message); } };
+let bo = null;
+function openBook(id) { bo = offers.find(o => o.id === id); if (!bo) return; $('#bt').textContent = 'احجز: ' + bo.title; const pr = parse(bo).pr; $('#broom').innerHTML = (pr.length ? pr.map(x => `<option value="${esc(x[0])}">${esc(x[0])} — ${esc(x[1])} جنيه</option>`).join('') : '<option value="">حسب العرض</option>'); $('#bmsg').hidden = true; bdlg.showModal(); }
+$('#bform').onsubmit = async e => {
+  e.preventDefault(); const f = Object.fromEntries(new FormData(e.target)), m = $('#bmsg'), g = $('#bgo'); g.disabled = true;
+  try { await api('lead', { name: f.name, phone: f.phone, governorate: f.governorate, service: bo.title, people: (f.room ? f.room + ' × ' : '') + f.n, payment: f.payment, notes: f.notes, website: f.website });
+    m.hidden = false; m.className = 'msg ok'; m.textContent = 'وصل حجزك، هنكلمك قريب بإذن الله.' + (typeof BANKS !== 'undefined' && BANKS.length ? ' وتقدر تدفع بالتحويل البنكي من قسم «الدفع عن طريق البنك».' : ''); e.target.reset(); setTimeout(() => bdlg.close(), 3500); }
+  catch (x) { m.hidden = false; m.className = 'msg er'; m.textContent = x.message; }
+  g.disabled = false;
+};
+
+window.api = api;
+ui(); load().then(loadFavs); if (me && me.role === 'owner' && location.hash === '#admin') showAdmin(true);
+
+$('#adminBtn').onclick = () => showAdmin($('#admin').hidden);
+</script>
+<script>
+// ===== الدفع عن طريق البنك =====
+// املا بيانات الحساب هنا. لو القايمة فاضية، القسم كله بيفضل مخفي.
+// كل بنك: { bank: 'اسم البنك', holder: 'اسم الحساب', acc: 'رقم الحساب', iban: 'EG...', branch: 'الفرع (اختياري)' }
+const BANKS = [
+  { bank: 'بنك مصر', holder: 'اورينت تورز', acc: '1130001000005102' }
+  // مثال لبنك تاني: { bank: 'اسم البنك', holder: 'اسم الحساب', acc: '0000000000', iban: 'EG000000000000000000000000000', branch: 'الفرع' }
+];
+(() => {
+  const $ = s => document.querySelector(s), e = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  if (!BANKS.length) return;
+  const ico = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 20h18"/></svg>';
+  const row = (l, v, copy, ltr) => v ? `<div class="br"><span class="bl2">${l}</span><span class="bv"${ltr ? ' dir="ltr"' : ''}>${e(v)}</span>${copy ? `<button type="button" class="cp" data-v="${e(v)}" aria-label="نسخ ${l}">نسخ</button>` : '<span></span>'}</div>` : '';
+  $('#bl').innerHTML = BANKS.map(b => `<article class="bn"><h3>${ico}${e(b.bank)}</h3>${row('اسم الحساب', b.holder)}${row('رقم الحساب', b.acc, 1, 1)}${row('آيبان (IBAN)', b.iban, 1, 1)}${row('الفرع', b.branch)}</article>`).join('');
+  $('#bl').onclick = async ev => {
+    const b = ev.target.closest('.cp'); if (!b) return; const v = b.dataset.v;
+    try { await navigator.clipboard.writeText(v); } catch (x) { const t = document.createElement('textarea'); t.value = v; t.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (y) {} t.remove(); }
+    b.textContent = 'تم النسخ ✓'; b.classList.add('ok'); clearTimeout(b._t); b._t = setTimeout(() => { b.textContent = 'نسخ'; b.classList.remove('ok'); }, 1600);
+  };
+  $('#payWa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('السلام عليكم، ده إيصال التحويل البنكي لحجزي.\nالاسم: \nالعرض: ');
+  $('#pay').hidden = false;
+})();
+</script>
+</body>
+</html>
