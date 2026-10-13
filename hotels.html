@@ -53,7 +53,7 @@ const offersOf = h => OFFERS.filter(o => o.hotel && nm(o.hotel).length > 2 && (n
 const mq = h => h.q || 'فندق ' + h.n + ' مكة المكرمة';
 const mapLink = h => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(mq(h));
 const mapEmbed = h => 'https://maps.google.com/maps?q=' + encodeURIComponent(mq(h)) + '&hl=ar&z=16&output=embed';
-const photo = h => `<div class="hph${h.i ? '' : ' no'}">${h.i ? '' : ico}${h.i ? `<img loading="lazy" decoding="async" alt="${esc(h.n)}" src="${esc(h.i)}" onerror="var p=this.parentNode;p.classList.add('no');p.insertAdjacentHTML('afterbegin',ico);this.remove()">` : ''}<span class="hsb">${'★'.repeat(h.s)}</span></div>`;
+const photo = h => `<div class="hph${h.i ? '' : ' no'}">${ico}${h.i ? `<img loading="lazy" decoding="async" alt="${esc(h.n)}" src="${esc(h.i)}" onerror="this.parentNode.classList.add('no');this.remove()">` : ''}<span class="hsb">${'★'.repeat(h.s)}</span></div>`;
 
 function paint() {
   const q = fq.trim();
@@ -79,7 +79,7 @@ const dlg = $('#hdlg');
 function openHotel(k) {
   const h = ALL[k]; if (!h) return; const offs = offersOf(h);
   const row = (a, b) => b ? `<tr><th>${a}</th><td>${b}</td></tr>` : '';
-  $('#hbody').innerHTML = `<div class="hdh${h.i ? '' : ' no'}">${h.i ? '' : ico}${h.i ? `<img alt="${esc(h.n)}" src="${esc(h.i)}" onerror="var p=this.parentNode;p.classList.add('no');p.insertAdjacentHTML('afterbegin',ico);this.remove()">` : ''}<span class="hsb">${'★'.repeat(h.s)}</span></div>
+  $('#hbody').innerHTML = `<div class="hdh${h.i ? '' : ' no'}">${ico}${h.i ? `<img alt="${esc(h.n)}" src="${esc(h.i)}" onerror="this.parentNode.classList.add('no');this.remove()">` : ''}<span class="hsb">${'★'.repeat(h.s)}</span></div>
 <div class="hdb"><h2>${esc(h.n)}</h2>
 <div class="tw"><table class="hdt">${row('التصنيف', '★'.repeat(h.s) + ' (' + h.s + ' نجوم)')}${row('المدينة', 'مكة المكرمة')}${row('الشارع / المنطقة', esc(h.w || ''))}${row('القرب من الحرم', esc(h.d))}${row('المسافة من الحرم', esc(h.dist))}${row('مدة المشي', esc(h.walk) + ' (تقريبًا)')}</table></div>
 ${h.f && h.f.length ? `<h3>المميزات</h3><ul class="hfeat">${h.f.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
