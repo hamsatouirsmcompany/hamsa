@@ -24,10 +24,8 @@ if ($('#loginBtn')) $('#loginBtn').onclick = () => me ? logout() : (location.hre
 // الزر ده بيفتح لوحة التحكم/حسابي (في صفحة العروض بيتغيّر بكود الصفحة نفسها)
 if ($('#adminBtn')) $('#adminBtn').onclick = () => { location.href = 'offers.html#admin'; };
 
-// هيدر ثابت + حركة الظهور وقت السكرول
+// هيدر ثابت + حركة ظهور خفيفة للعناصر عند وصولها للشاشة
 (() => {
-  const hd = document.querySelector('header');
-  if (hd) { const f = () => hd.classList.toggle('stuck', scrollY > 8); addEventListener('scroll', f, { passive: true }); f(); }
   if (matchMedia('(prefers-reduced-motion:reduce)').matches || !('IntersectionObserver' in window)) return;
   const io = new IntersectionObserver(es => {
     es.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top || b.boundingClientRect.right - a.boundingClientRect.right).forEach((e, i) => {

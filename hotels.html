@@ -18,7 +18,7 @@ window.__op=fetch(window.__API+'?action=offers').then(function(r){return r.json(
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header><a href="index.html" aria-label="همسة للسياحة"><img src="images/logo-header.webp" width="164" height="120" alt="همسة للسياحة" style="height:60px;display:block;width:auto"></a>
+<header><a href="index.html" aria-label="همسة للسياحة"><img src="images/logo-header.webp" width="164" height="120" alt="همسة للسياحة" style="height:60px;display:block;width:auto" onerror="this.remove();this.parentNode.classList.add('logo-missing')"></a>
 <nav class="nv" aria-label="التنقل"><a href="index.html">الرئيسية</a><a href="offers.html">العروض</a><a href="hotels.html" aria-current="page">الفنادق</a><a href="gallery.html">الصور</a></nav>
 <span class="acts"><button id="adminBtn" type="button" hidden>لوحة التحكم</button> <button id="loginBtn" type="button">تسجيل الدخول</button></span></header>
 <div class="ph"><h1>فنادقنا</h1><p>فنادق مختارة قريبة من الحرم المكي، تختار منها على حسب فئتك وميزانيتك.</p></div>

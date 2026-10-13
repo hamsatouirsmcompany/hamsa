@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header><a href="index.html" aria-label="همسة للسياحة"><img src="images/logo-header.webp" width="164" height="120" alt="همسة للسياحة" style="height:60px;display:block;width:auto"></a>
+<header><a href="index.html" aria-label="همسة للسياحة"><img src="images/logo-header.webp" width="164" height="120" alt="همسة للسياحة" style="height:60px;display:block;width:auto" onerror="this.remove();this.parentNode.classList.add('logo-missing')"></a>
 <nav class="nv" aria-label="التنقل"><a href="index.html">الرئيسية</a><a href="offers.html">العروض</a><a href="hotels.html">الفنادق</a><a href="gallery.html" aria-current="page">الصور</a></nav>
 <span class="acts"><button id="adminBtn" type="button" hidden>لوحة التحكم</button> <button id="loginBtn" type="button">تسجيل الدخول</button></span></header>
 <div class="ph"><h1>لحظاتنا مع ضيوف الرحمن</h1><p>صور حقيقية من رحلات ضيوفنا مع همسة للسياحة.</p></div>
@@ -57,7 +57,7 @@ const GPH = [
   function show() {
     list = GPH.filter(p => p.c === cur);
     $('#gg').className = 'gg' + (list.some(p => p.r) ? ' mas' : '');
-    $('#gg').innerHTML = list.map((p, i) => `<a class="gi" href="images/gallery/${p.f}.webp" data-i="${i}" style="aspect-ratio:${p.r || '4/3'}"><img loading="lazy" decoding="async" width="640" height="480" alt="${e(p.t)}" src="images/gallery/${p.f}-t.webp"${p.p ? ` style="object-position:${p.p}"` : ''}>${p.q ? '' : `<span>${e(p.t)}</span>`}</a>`).join('');
+    $('#gg').innerHTML = list.map((p, i) => `<a class="gi" href="images/gallery/${p.f}.webp" data-i="${i}" style="aspect-ratio:${p.r || '4/3'}"><img loading="lazy" decoding="async" width="640" height="480" alt="${e(p.t)}" src="images/gallery/${p.f}-t.webp" onerror="this.remove();this.parentNode.classList.add('no-image')"${p.p ? ` style="object-position:${p.p}"` : ''}>${p.q ? '' : `<span>${e(p.t)}</span>`}</a>`).join('');
   }
   function tabs() {
     $('#gtabs').hidden = cats.length < 2;
