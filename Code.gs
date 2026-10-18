@@ -10,7 +10,7 @@ const NOTIFY_EMAIL = ''; // اختياري: إيميل يوصله تنبيه ع�
 const COLS = {
   Offers: ['id','title','category','priceFrom','price','details','hotel','stars','city','airline','duration','image','status','updatedBy','updatedAt'],
   Leads: ['id','time','name','phone','governorate','service','people','travelDate','payment','notes','status','account'],
-  Users: ['username','name','role','salt','hash','active'],
+  Users: ['username','name','role','salt','hash','active','created'],
   Log: ['time','user','action','offerId','data'],
   Favs: ['username','ids']
 };
@@ -53,7 +53,7 @@ function log(user, action, offerId, data) { sh('Log').appendRow([now(), user, ac
 function hash(p, s) { return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, s + p).map(b => ('0' + (b & 255).toString(16)).slice(-2)).join(''); }
 function addUserRow(username, name, role, pass) {
   const salt = Utilities.getUuid();
-  upsert('Users', 'username', { username, name, role, salt, hash: hash(pass, salt), active: true });
+  upsert('Users', 'username', { username, name, role, salt, hash: hash(pass, salt), active: true }, (old, n) => { n.created = old && old.created ? old.created : now(); }); // تاريخ التسجيل (بيتحفظ أول مرة بس)
 }
 const out = o => ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
 
@@ -108,7 +108,9 @@ function doPost(e) {
         if (String(d.password || '').length < 8) throw new Error('كلمة السر 8 حروف أو أكتر');
         if (rows('Users').some(x => String(x.username).toLowerCase() === email)) throw new Error('الإيميل ده مسجّل قبل كده. سجّل دخول');
         c.put('reg', String(n + 1), 3600);
-        addUserRow(email, name, 'visitor', d.password); return out({ ok: true });
+        addUserRow(email, name, 'visitor', d.password);
+        if (NOTIFY_EMAIL) try { MailApp.sendEmail(NOTIFY_EMAIL, 'حساب زائر جديد على الموقع', name + ' — ' + email); } catch (x) {}
+        return out({ ok: true });
       }
       case 'favs': case 'toggleFav': {
         const u = auth(d.token, false, true), r0 = rows('Favs').find(x => x.username === u.username);
@@ -174,6 +176,7 @@ function doPost(e) {
       case 'leads': auth(d.token); return out({ leads: rows('Leads').reverse() });
       case 'leadStatus': auth(d.token); upsert('Leads', 'id', { id: d.id, status: d.status }); return out({ ok: true });
       case 'users': auth(d.token, true); return out({ users: rows('Users').filter(u => u.role !== 'visitor').map(u => ({ username: u.username, name: u.name, role: u.role, active: u.active })) });
+      case 'visitors': auth(d.token, true); return out({ visitors: rows('Users').filter(u => u.role === 'visitor').map(u => ({ username: u.username, name: u.name, active: u.active === true, created: u.created || '' })).reverse() }); // الأحدث الأول
       case 'addUser': {
         const u = auth(d.token, true);
         if (!/^[a-zA-Z0-9_.@-]{3,40}$/.test(d.username) || String(d.password).length < 8) throw new Error('اسم المستخدم 3 حروف إنجليزي أو أكتر، وكلمة السر 8 أو أكتر');

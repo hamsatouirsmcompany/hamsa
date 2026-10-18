@@ -132,7 +132,7 @@ $('#lead').onsubmit = async e => {
 window.onLogout = () => { window._o = null; adm.sel.clear(); favs = new Set(); render(); };
 async function loadFavs() { if (!me) return; try { favs = new Set((await api('favs')).ids); } catch (x) {} render(); }
 async function toggleFav(id) { if (!me) { location.href = 'login.html'; return; } try { favs = new Set((await api('toggleFav', { id })).ids); } catch (x) { alert(x.message); } render(); if (!$('#admin').hidden && me.role === 'visitor') aTab('fav'); }
-function showAdmin(on) { if (on && !me) on = false; $('#admin').hidden = !on; $('#site').hidden = on; if (on) { const t = me.role === 'visitor' ? [['fav', 'المفضلة'], ['mine', 'طلباتي']] : [['offers', 'العروض'], ['leads', 'الطلبات']]; if (me.role === 'owner') t.push(['users', 'الموظفين']);
+function showAdmin(on) { if (on && !me) on = false; $('#admin').hidden = !on; $('#site').hidden = on; if (on) { const t = me.role === 'visitor' ? [['fav', 'المفضلة'], ['mine', 'طلباتي']] : [['offers', 'العروض'], ['leads', 'الطلبات']]; if (me.role === 'owner') t.push(['users', 'الموظفين'], ['visitors', 'الزوار']);
   $('#atabs').innerHTML = t.map(x => `<button data-a="${x[0]}">${x[1]}</button>`).join('') + ' <button class="o" id="back">رجوع للموقع</button>'; $('#back').onclick = () => showAdmin(false); aTab(t[0][0]); } }
 $('#adminBtn').onclick = () => showAdmin($('#admin').hidden);
 $('#atabs').onclick = e => e.target.dataset.a && aTab(e.target.dataset.a);
@@ -249,6 +249,11 @@ async function aTab(t) {
       const l = (await api('leads')).leads;
       v.innerHTML = '<div class="tw"><table><tr><th>الاسم</th><th>الموبايل</th><th>العرض</th><th>أشخاص</th><th>موعد</th><th>دفع</th><th>ملاحظات</th><th>الحالة</th></tr>' + (l.length ? l.map(x => `<tr><td>${esc(x.name)}<br><small>${esc(String(x.time).slice(0, 10))}</small></td><td><a href="tel:${esc(x.phone)}">${esc(x.phone)}</a></td><td>${esc(x.service)}</td><td>${esc(x.people)}</td><td>${esc(x.travelDate)}</td><td>${esc(x.payment)}</td><td>${esc(x.notes)}</td>
 <td><select onchange="api('leadStatus',{id:'${x.id}',status:this.value})">${['جديد', 'تم التواصل', 'تم الحجز', 'ملغي'].map(s => `<option${s === x.status ? ' selected' : ''}>${s}</option>`).join('')}</select></td></tr>`).join('') : '<tr><td colspan=8 class="empty">لسه مفيش طلبات.</td></tr>') + '</table></div>';
+    } else if (t === 'visitors') {
+      const l = (await api('visitors')).visitors, today = new Date().toISOString().slice(0, 10), nw = l.filter(x => String(x.created).slice(0, 10) === today).length;
+      v.innerHTML = `<p class="meta">إجمالي الزوار المسجّلين: <b>${l.length}</b>${nw ? ' · جدد النهارده: <b>' + nw + '</b>' : ''}</p><div class="tw"><table><tr><th>الاسم</th><th>الإيميل</th><th>تاريخ التسجيل</th><th>الحالة</th><th></th></tr>` +
+        (l.length ? l.map(x => `<tr><td>${esc(x.name)}</td><td dir="ltr">${esc(x.username)}</td><td>${x.created ? esc(String(x.created).slice(0, 10)) : '—'}</td><td>${x.active ? 'شغّال' : 'موقوف'}</td><td><button class="${x.active ? 'd' : 'o'}" data-vu="${esc(x.username)}" data-va="${x.active ? 0 : 1}">${x.active ? 'إيقاف' : 'تفعيل'}</button></td></tr>`).join('') : '<tr><td colspan=5 class="empty">لسه مفيش زوار سجّلوا حساب.</td></tr>') + '</table></div>';
+      v.onclick = async e => { const b = e.target.closest('[data-vu]'); if (!b) return; b.disabled = true; try { await api('setActive', { username: b.dataset.vu, active: b.dataset.va === '1' }); aTab('visitors'); } catch (x) { b.disabled = false; alert(x.message); } };
     } else {
       const l = (await api('users')).users;
       v.innerHTML = '<form class="f" onsubmit="addU(event)"><label>الاسم<input name="name" required></label><label>اسم المستخدم (إنجليزي)<input name="username" required></label><label>كلمة السر (8+ حروف)<input name="password" type="password" minlength="8" required></label><div class="w"><button>إضافة موظف</button></div></form><div class="tw"><table><tr><th>الاسم</th><th>المستخدم</th><th>الدور</th><th>الحالة</th><th></th></tr>' +
