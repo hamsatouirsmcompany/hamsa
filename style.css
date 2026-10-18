@@ -408,7 +408,7 @@ main>section:first-child{margin-top:0}
 .hrow>*{flex:1;text-align:center;padding:6px 10px;min-height:40px;display:inline-flex;align-items:center;justify-content:center}
 .hb2 .hrow .btn{margin-top:0}
 #hdlg{width:min(740px,96vw);padding:0;overflow:auto;max-height:94vh;max-height:94dvh}
-#hdlg .hx{position:absolute;top:10px;inset-inline-start:10px;z-index:2;width:42px;height:42px;min-height:42px;border-radius:50%;padding:0;background:#fff;border-color:var(--line);color:var(--hd)}
+#hdlg .hx{position:absolute;top:10px;inset-inline-end:10px;z-index:2;width:42px;height:42px;min-height:42px;border-radius:50%;padding:0;background:#fff;border-color:var(--line);color:var(--hd)}
 .hdh{position:relative;aspect-ratio:16/8;background:linear-gradient(135deg,#fff1c2,#fffaf0);display:grid;place-items:center}
 .hdh img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .hdh.no{aspect-ratio:16/4}
@@ -491,3 +491,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 @media(max-width:520px){html{scroll-padding-top:82px}header>a:first-child{min-width:0}header>a:first-child:after{font-size:.96rem}.ty .plans{grid-template-columns:1fr}.ty .premium-plans{grid-template-columns:1fr 1fr}.ty .am{gap:5px}.ty .pl{padding:14px}.fb .row .bk{flex:1 1 100%}.wa{bottom:max(12px,env(safe-area-inset-bottom));inset-inline-start:max(12px,env(safe-area-inset-left))}}
 @media(max-width:360px){.ty .premium-plans{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.fc,.hc,.hmc,.ty .pl{transition:none}}
+/* زر الواتساب العائم يختفي لما تكون نافذة مفتوحة */
+body:has(dialog[open]) .wa{display:none}
+.hdh>svg{width:56px;height:56px;color:var(--gd);opacity:.7}
