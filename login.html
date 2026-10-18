@@ -75,10 +75,9 @@ input{border-color:#e6d594}
 <div class="box">
   <img src="images/logo-login.webp" width="245" height="180" alt="همسة للسياحة" onerror="this.remove()">
   <h1 id="title">تسجيل الدخول</h1>
-  <p class="sub" id="sub">للمدير والموظفين والزوار</p>
   <div class="seg" role="tablist">
     <button type="button" id="tLogin" class="on" role="tab">دخول</button>
-    <button type="button" id="tReg" role="tab">حساب جديد (زائر)</button>
+    <button type="button" id="tReg" role="tab">حساب جديد</button>
   </div>
   <form id="f" novalidate>
     <label id="nameL" hidden>الاسم<input name="name" autocomplete="name" enterkeyhint="next" maxlength="60"></label>
@@ -108,7 +107,7 @@ function mode(r) {
   $('#uLbl').textContent = r ? 'الإيميل' : 'اسم المستخدم أو الإيميل';
   $('#p').autocomplete = r ? 'new-password' : 'current-password';
   $('#go').textContent = r ? 'إنشاء الحساب' : 'دخول';
-  $('#note').textContent = 'الحساب الجديد للزوار فقط: تشوف العروض وتحجز وتحفظ المفضلة. كلمة السر 8 حروف أو أكتر.'; $('#note').hidden = !r;
+  $('#note').textContent = 'كلمة السر 8 حروف أو أكتر.'; $('#note').hidden = !r;
   $('#err').hidden = true;
 }
 $('#tLogin').onclick = () => mode(false);
