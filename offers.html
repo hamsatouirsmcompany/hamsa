@@ -164,7 +164,7 @@ function drawTable() {
   const row = o => { const on = o.status === 'active', id = esc(o.id); return `<tr class="${on ? '' : 'off'}"><td><input type="checkbox" data-sel="${id}"${adm.sel.has(o.id) ? ' checked' : ''} aria-label="تحديد"></td>
 <td><b>${esc(o.title)}</b><br><small>${CATS[o.category] || ''}${o.updatedBy ? ' · ' + esc(o.updatedBy) : ''}</small></td><td>${esc(o.price)}</td>
 <td>${owner ? `<button class="sw${on ? ' on' : ''}" data-act="tg" data-id="${id}" aria-pressed="${on}">${on ? 'ظاهر' : 'مخفي'}</button>` : (on ? 'ظاهر' : 'مخفي')}</td>
-<td class="ac"><button class="o" data-act="ed" data-id="${id}">تعديل</button> <button class="o" data-act="cp" data-id="${id}">نسخ</button></td></tr>`; };
+<td class="ac"><button class="o" data-act="ed" data-id="${id}">تعديل</button> <button class="o" data-act="cp" data-id="${id}">نسخ</button>${owner ? ` <button class="d" data-act="dl" data-id="${id}">حذف</button>` : ''}</td></tr>`; };
   box.innerHTML = '<div class="tw"><table><tr><th><input type="checkbox" id="selall" aria-label="تحديد الكل"' + (l.length && l.every(o => adm.sel.has(o.id)) ? ' checked' : '') + '></th><th>العرض</th><th>السعر</th><th>الحالة</th><th></th></tr>' +
     (l.length ? l.map(row).join('') : '<tr><td colspan=5 class="empty">مفيش عروض بالشكل ده.</td></tr>') + '</table></div><p class="meta">' + l.length + ' عرض</p>';
 }
@@ -172,10 +172,20 @@ function drawBulk() {
   const b = $('#bulk'); if (!b) return; adm.sel.forEach(id => { if (!byId(id)) adm.sel.delete(id); });
   if (!adm.sel.size) { b.innerHTML = ''; return; }
   const keep = b.querySelector('#bpv') ? { v: $('#bpv').value, m: $('#bpm').value, u: $('#bpu').value, i: $('#bpi').checked } : { v: '', m: '1', u: '', i: false };
-  b.innerHTML = `<div class="bulk"><b>المحدد: ${adm.sel.size}</b>${me.role === 'owner' ? ' <button class="d" data-act="bs" data-s="hidden">إخفاء</button> <button data-act="bs" data-s="active">إظهار</button>' : ''}
+  b.innerHTML = `<div class="bulk"><b>المحدد: ${adm.sel.size}</b>${me.role === 'owner' ? ' <button class="d" data-act="bs" data-s="hidden">إخفاء</button> <button data-act="bs" data-s="active">إظهار</button> <button class="d" data-act="bd">حذف نهائي</button>' : ''}
 <span class="meta">| الأسعار:</span><select id="bpm"><option value="1">زيادة</option><option value="-1">خفض</option></select><input id="bpv" type="number" min="0" step="any" placeholder="القيمة" style="width:90px"><select id="bpu"><option value="">ج.م</option><option value="%">%</option></select>
 <label style="display:inline-flex;grid-auto-flow:column;align-items:center;gap:4px"><input type="checkbox" id="bpi" style="width:auto">شمل الرضيع</label><button data-act="bp">تطبيق</button> <button class="o" data-act="bc">إلغاء التحديد</button></div>`;
   $('#bpv').value = keep.v; $('#bpm').value = keep.m; $('#bpu').value = keep.u; $('#bpi').checked = keep.i;
+}
+async function delOffers(ids) {
+  const l = ids.map(byId).filter(Boolean); if (!l.length || me.role !== 'owner') return;
+  if (!confirm((l.length === 1 ? 'هتحذف العرض «' + l[0].title + '»' : 'هتحذف ' + l.length + ' عرض') + ' نهائيًا ومش هتقدر ترجّعه. لو عايز بس تخفيه من الموقع استخدم زر «ظاهر/مخفي». تكمّل؟')) return;
+  const snap = window._o.slice(), gone = l.map(o => o.id);
+  window._o = window._o.filter(o => !gone.includes(o.id)); gone.forEach(id => adm.sel.delete(id));
+  adm.pend++; drawTable(); drawBulk(); syncPublic();
+  try { await api('deleteOffers', { ids: gone }); toast('✓ اتحذف ' + gone.length + ' عرض'); }
+  catch (x) { window._o = snap; drawTable(); drawBulk(); syncPublic(); toast(x.message, true); }
+  finally { adm.pend--; }
 }
 function bulkStatus(s) { const ids = [...adm.sel]; adm.sel.clear(); patch(ids.map(id => ({ id, status: s })), (s === 'active' ? '✓ اتظهر ' : '✓ اتخفى ') + ids.length + ' عرض'); }
 function bulkPrice() {
@@ -198,7 +208,7 @@ function paintOffers() {
   v.onclick = e => { const b = e.target.closest('[data-act]'); if (!b) return; const a = b.dataset.act, id = b.dataset.id;
     if (a === 'tg') { const on = byId(id).status === 'active'; patch([{ id, status: on ? 'hidden' : 'active' }], on ? '✓ اتخفى' : '✓ اتظهر'); }
     else if (a === 'ed') editOffer(id); else if (a === 'cp') editOffer(id, true);
-    else if (a === 'bs') bulkStatus(b.dataset.s); else if (a === 'bp') bulkPrice();
+    else if (a === 'bs') bulkStatus(b.dataset.s); else if (a === 'bp') bulkPrice(); else if (a === 'dl') delOffers([id]); else if (a === 'bd') delOffers([...adm.sel]);
     else if (a === 'bc') { adm.sel.clear(); drawTable(); drawBulk(); } };
   v.onchange = e => { const t = e.target;
     if (t.id === 'ac') { adm.c = t.value; drawTable(); } else if (t.id === 'as') { adm.s = t.value; drawTable(); }

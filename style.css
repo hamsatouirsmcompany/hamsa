@@ -494,3 +494,5 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 /* زر الواتساب العائم يختفي لما تكون نافذة مفتوحة */
 body:has(dialog[open]) .wa{display:none}
 .hdh>svg{width:56px;height:56px;color:var(--gd);opacity:.7}
+/* أزرار إجراءات العرض في لوحة التحكم تلف على سطر تاني بدل ما تخرج برّه الشاشة */
+td.ac{white-space:normal;min-width:118px}td.ac button{margin:2px 0;padding:6px 12px}

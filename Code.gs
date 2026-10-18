@@ -153,6 +153,19 @@ function doPost(e) {
           return out({ ok: true, n });
         } finally { lock.releaseLock(); }
       }
+      case 'deleteOffers': { // حذف نهائي (المدير الرئيسي بس) — بيتسجّل في Log بكل بيانات العرض المحذوف
+        const u = auth(d.token, true), ids = (d.ids || []).slice(0, 60).map(String);
+        if (!ids.length) throw new Error('مفيش عروض محددة');
+        const lock = LockService.getScriptLock(); lock.waitLock(15000);
+        try {
+          const t = table('Offers'), ix = t.h.indexOf('id'), del = [];
+          t.v.forEach((r, i) => { if (ids.includes(String(r[ix]))) del.push(i); });
+          const gone = del.map(i => Object.fromEntries(t.h.map((k, c) => [k, t.v[i][c]])));
+          del.reverse().forEach(i => t.s.deleteRow(i + 2));
+          bust(); log(u.username, 'delete', '', JSON.stringify(gone).slice(0, 40000));
+          return out({ ok: true, n: del.length });
+        } finally { lock.releaseLock(); }
+      }
       case 'setStatus': {
         const u = auth(d.token, true);
         upsert('Offers', 'id', { id: d.id, status: d.status, updatedBy: u.username, updatedAt: now() }); bust();
