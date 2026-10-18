@@ -505,3 +505,10 @@ td.ac{white-space:normal;min-width:118px}td.ac button{margin:2px 0;padding:6px 1
 .vd-f{justify-self:center;width:100%;max-width:320px;border-radius:20px;overflow:hidden;background:#14295f;border:1px solid var(--line);box-shadow:0 12px 32px #14295f2a}
 .vd-f video{display:block;width:100%;height:auto;aspect-ratio:9/16;background:#14295f}
 @media(max-width:760px){.vd{grid-template-columns:1fr;gap:18px;text-align:center;margin:28px 0}.vd-t p{margin-inline:auto}.vd-f{max-width:300px}}
+/* عمرة التيسير: كارتين متساويين + صف الفئات المميزة تحتهم */
+.ty .pmx{display:grid;gap:10px}
+.ty .pm-h{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--g);font-size:.95rem}
+.ty .pm-h:before,.ty .pm-h:after{content:"";flex:1;height:1px;background:var(--line)}
+.ty .pmx .premium-plans{margin-top:0;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:420px){.ty .pmx .premium-plans{grid-template-columns:1fr}}
+
