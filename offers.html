@@ -61,7 +61,8 @@ window.__op=fetch(window.__API+'?action=offers').then(function(r){return r.json(
 <label>الاسم بالكامل *<input name="name" required maxlength="100" autocomplete="name"></label>
 <label>رقم الموبايل *<input name="phone" type="tel" required inputmode="tel" autocomplete="tel"></label>
 <label>المحافظة<input name="governorate"></label>
-<label>نوع الحجز<select name="room" id="broom"></select></label>
+<label>العرض<select id="boffer" aria-label="العرض المطلوب"></select></label>
+<label>نوع الغرفة<select name="room" id="broom"></select></label>
 <label>عدد الأفراد<input name="n" type="number" min="1" value="1" inputmode="numeric"></label>
 <label>طريقة الدفع<select name="payment"><option>كاش</option><option>تقسيط</option><option>لم أحدد بعد</option></select></label>
 <label>ملاحظات<textarea name="notes" rows="2" maxlength="200"></textarea></label>
@@ -296,7 +297,18 @@ window.editOffer = (id, copy) => {
 window.addU = async e => { e.preventDefault(); try { await api('addUser', Object.fromEntries(new FormData(e.target))); aTab('users'); } catch (x) { alert(x.message); } };
 window.actU = async (username, active) => { try { await api('setActive', { username, active }); aTab('users'); } catch (x) { alert(x.message); } };
 let bo = null;
-function openBook(id) { bo = offers.find(o => o.id === id); if (!bo) return; $('#bt').textContent = 'احجز: ' + bo.title; const pr = parse(bo).pr; $('#broom').innerHTML = (pr.length ? pr.map(x => `<option value="${esc(x[0])}">${esc(x[0])} — ${esc(x[1])} جنيه</option>`).join('') : '<option value="">حسب العرض</option>'); $('#bmsg').hidden = true; bdlg.showModal(); }
+function fillBook() { // أنواع الغرف بتتغيّر حسب العرض المختار، وتختفي لو مفيش أسعار غرف
+  const pr = parse(bo).pr; $('#bt').textContent = 'احجز: ' + bo.title;
+  $('#broom').innerHTML = pr.map(x => `<option value="${esc(x[0])}">${esc(x[0])} — ${esc(x[1])} جنيه</option>`).join('');
+  $('#broom').parentNode.style.display = pr.length ? '' : 'none';
+}
+function openBook(id) {
+  bo = offers.find(o => o.id === id); if (!bo) return;
+  const grp = (t, l) => l.length ? `<optgroup label="${esc(t)}">` + l.map(o => `<option value="${esc(o.id)}">${esc(o.title)}</option>`).join('') + '</optgroup>' : '';
+  $('#boffer').innerHTML = Object.entries(CATS).map(([k, t]) => grp(t, offers.filter(o => o.category === k))).join('') + grp('أخرى', offers.filter(o => !CATS[o.category]));
+  $('#boffer').value = bo.id; fillBook(); $('#bmsg').hidden = true; bdlg.showModal();
+}
+$('#boffer').onchange = e => { bo = offers.find(o => o.id === e.target.value) || bo; fillBook(); };
 $('#bform').onsubmit = async e => {
   e.preventDefault(); const f = Object.fromEntries(new FormData(e.target)), m = $('#bmsg'), g = $('#bgo'); g.disabled = true;
   try { await api('lead', { name: f.name, phone: f.phone, governorate: f.governorate, service: bo.title, people: (f.room ? f.room + ' × ' : '') + f.n, payment: f.payment, notes: f.notes, website: f.website });
