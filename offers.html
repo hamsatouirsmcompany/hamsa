@@ -14,11 +14,11 @@
 window.__API='https://script.google.com/macros/s/AKfycbxRr2PYw2kkY9TiAGVT0MfswIBsxYPtrVuRBvXjzrOTVdr7ueGHOSLjHkUEZkshPmEOFg/exec';
 window.__op=fetch(window.__API+'?action=offers').then(function(r){return r.json()}).catch(function(){return null});
 </script>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'"><noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header><a href="index.html" aria-label="همسة للسياحة"><img src="images/logo-header.webp" width="164" height="120" alt="همسة للسياحة" style="height:60px;display:block;width:auto" onerror="this.remove();this.parentNode.classList.add('logo-missing')"></a>
+<header><a href="index.html" aria-label="همسة للسياحة"><img src="images/logo-header.webp" width="164" height="120" alt="همسة للسياحة" style="height:60px;display:block;width:auto" onerror="this.parentNode.classList.add('logo-missing');this.remove()"></a>
 <nav class="nv" aria-label="التنقل"><a href="index.html">الرئيسية</a><a href="offers.html" aria-current="page">العروض</a><a href="hotels.html">الفنادق</a><a href="gallery.html">الصور</a></nav>
 <span class="acts"><button id="adminBtn" type="button" hidden>لوحة التحكم</button> <button id="loginBtn" type="button">تسجيل الدخول</button></span></header>
 <div class="ph"><h1>عروضنا</h1><p>عمرة الكاش · عمرة التيسير · الحج — اختار البرنامج المناسب ليك واحجز أونلاين.</p></div>
@@ -105,7 +105,7 @@ const DT = /^موعد العمرة\s*[:：]\s*(\d{4}-\d{2}-\d{2})(?:\s*إلى\s*
 const fd = (i, y) => new Date(i + 'T00:00:00').toLocaleDateString('ar-EG-u-nu-latn', y ? { day: 'numeric', month: 'long', year: 'numeric' } : { day: 'numeric', month: 'long' });
 const rng = dt => dt[1] ? 'من ' + fd(dt[0], dt[0].slice(0, 4) !== dt[1].slice(0, 4)) + ' إلى ' + fd(dt[1], true) : fd(dt[0], true);
 function parse(o) { const pr = [], rest = []; let dt = null; String(o.details || '').split('\n').forEach(l => { l = l.trim(); const m = l.match(ROOM), d = l.match(DT); if (m) pr.push([m[1].replace(/^ال/, ''), m[2]]); else if (d && !dt) dt = [d[1], d[2] || '']; else if (l) rest.push(l); }); return { pr, rest, dt }; }
-const card = o => { const { pr, rest, dt } = parse(o); return `<article class="fc"><div class="fh${safeImg(o.image) ? ' im' : ''}"><img loading="lazy" decoding="async" alt="${esc(o.title)}" data-zoom="1" src="${esc(pic(o))}" onerror="this.remove();this.parentNode.classList.add('no-image')">${o.duration ? `<span class="bd">${esc(o.duration)}</span>` : ''}</div><div class="fb">
+const card = o => { const { pr, rest, dt } = parse(o); return `<article class="fc"><div class="fh${safeImg(o.image) ? ' im' : ''}"><img loading="lazy" decoding="async" alt="${esc(o.title)}" data-zoom="1" src="${esc(pic(o))}" onerror="this.parentNode.classList.add('no-image');this.remove()">${o.duration ? `<span class="bd">${esc(o.duration)}</span>` : ''}</div><div class="fb">
 <h3>${esc(o.title)}</h3><div class="meta">${[o.hotel, o.stars ? '★'.repeat(o.stars) : '', o.airline].filter(Boolean).map(esc).join(' · ')}</div>
 ${dt ? `<div class="dt"><span aria-hidden="true">📅</span> موعد العمرة: ${esc(rng(dt))}</div>` : ''}<ul>${rest.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
 ${pr.length ? `<div class="pg">${pr.map(x => `<i>${esc(x[0])}<b>${esc(x[1])}</b>جنيه</i>`).join('')}</div>` : `<div class="price">${esc(o.price)}</div>`}
@@ -132,7 +132,7 @@ $('#lead').onsubmit = async e => {
 window.onLogout = () => { window._o = null; adm.sel.clear(); favs = new Set(); render(); };
 async function loadFavs() { if (!me) return; try { favs = new Set((await api('favs')).ids); } catch (x) {} render(); }
 async function toggleFav(id) { if (!me) { location.href = 'login.html'; return; } try { favs = new Set((await api('toggleFav', { id })).ids); } catch (x) { alert(x.message); } render(); if (!$('#admin').hidden && me.role === 'visitor') aTab('fav'); }
-function showAdmin(on) { if (on && (!me || me.role === 'staff')) on = false; $('#admin').hidden = !on; $('#site').hidden = on; if (on) { const t = me.role === 'visitor' ? [['fav', 'المفضلة'], ['mine', 'طلباتي']] : [['offers', 'العروض'], ['leads', 'الطلبات']]; if (me.role === 'owner') t.push(['users', 'الموظفين']);
+function showAdmin(on) { if (on && !me) on = false; $('#admin').hidden = !on; $('#site').hidden = on; if (on) { const t = me.role === 'visitor' ? [['fav', 'المفضلة'], ['mine', 'طلباتي']] : [['offers', 'العروض'], ['leads', 'الطلبات']]; if (me.role === 'owner') t.push(['users', 'الموظفين']);
   $('#atabs').innerHTML = t.map(x => `<button data-a="${x[0]}">${x[1]}</button>`).join('') + ' <button class="o" id="back">رجوع للموقع</button>'; $('#back').onclick = () => showAdmin(false); aTab(t[0][0]); } }
 $('#adminBtn').onclick = () => showAdmin($('#admin').hidden);
 $('#atabs').onclick = e => e.target.dataset.a && aTab(e.target.dataset.a);
@@ -291,7 +291,7 @@ $('#bform').onsubmit = async e => {
 };
 
 window.api = api;
-ui(); load().then(loadFavs); if (me && me.role === 'owner' && location.hash === '#admin') showAdmin(true);
+ui(); load().then(loadFavs); if (me && location.hash === '#admin') showAdmin(true);
 
 $('#adminBtn').onclick = () => showAdmin($('#admin').hidden);
 </script>

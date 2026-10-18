@@ -1,7 +1,7 @@
 // ===== كود مشترك بين كل الصفحات =====
 window.__API = window.__API || 'https://script.google.com/macros/s/AKfycbxRr2PYw2kkY9TiAGVT0MfswIBsxYPtrVuRBvXjzrOTVdr7ueGHOSLjHkUEZkshPmEOFg/exec';
 const API = window.__API;
-const WA = '201096177756';
+const WA = '201010336305';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let token = sessionStorage.getItem('t'), me = null;
@@ -16,7 +16,7 @@ async function api(action, data = {}) {
 function ui() {
   const l = $('#loginBtn'), a = $('#adminBtn');
   if (l) l.textContent = me ? 'خروج (' + me.name + ')' : 'تسجيل الدخول';
-  if (a) { a.hidden = !me || me.role === 'staff'; a.textContent = me && me.role === 'visitor' ? 'حسابي' : 'لوحة التحكم'; }
+  if (a) { a.hidden = !me; a.textContent = me && me.role === 'visitor' ? 'حسابي' : 'لوحة التحكم'; }
   if (!me && typeof showAdmin === 'function') showAdmin(false);
 }
 function logout() { token = me = null; sessionStorage.clear(); if (window.onLogout) window.onLogout(); ui(); }
@@ -36,4 +36,12 @@ if ($('#adminBtn')) $('#adminBtn').onclick = () => { location.href = 'offers.htm
   const sel = '.fc,.ty,.gi,.hc,.hgh,.bn,.pst li,.hmc,#contact form,#pay h2,#contact h2';
   function scan() { document.querySelectorAll(sel).forEach(el => { if (el.dataset.rv) return; el.dataset.rv = 1; el.classList.add('rv'); io.observe(el); }); }
   let _sq; scan(); new MutationObserver(() => { cancelAnimationFrame(_sq); _sq = requestAnimationFrame(scan); }).observe(document.body, { childList: true, subtree: true });
+})();
+
+// تسخين كاش العروض: في الصفحات اللي مش بتحمّلها (الرئيسية والصور) نجيبها وقت الفراغ، فصفحة العروض والفنادق تفتح فورًا
+(() => {
+  if (window.__op || /offers|hotels/.test(location.pathname)) return;
+  const cn = navigator.connection || {}; if (cn.saveData || /^(slow-2g|2g)$/.test(cn.effectiveType || '')) return;
+  const warm = () => fetch(API + '?action=offers').then(r => r.json()).then(j => { if (j && j.offers) localStorage.setItem('hm_offers', JSON.stringify(j.offers)); }).catch(() => {});
+  addEventListener('load', () => window.requestIdleCallback ? requestIdleCallback(warm, { timeout: 4000 }) : setTimeout(warm, 1500));
 })();
