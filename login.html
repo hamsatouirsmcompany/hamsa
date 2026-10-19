@@ -81,7 +81,7 @@ input{border-color:#e6d594}
   </div>
   <form id="f" novalidate>
     <label id="nameL" hidden>الاسم<input name="name" autocomplete="name" enterkeyhint="next" maxlength="60"></label>
-    <label><span id="uLbl">اسم المستخدم أو الإيميل</span><input name="u" required autocomplete="username" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" dir="ltr" style="text-align:start"></label>
+    <label><span id="uLbl">اسم المستخدم أو الإيميل أو الموبايل</span><input name="u" required autocomplete="username" inputmode="text" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" dir="ltr" style="text-align:start"></label>
     <label>كلمة السر<span class="pw"><input name="p" id="p" type="password" required autocomplete="current-password" autocapitalize="none" enterkeyhint="go" dir="ltr" style="text-align:start"><button type="button" id="eye">إظهار</button></span></label>
     <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
     <div id="err" class="msg" role="alert" hidden></div>
@@ -104,7 +104,7 @@ function mode(r) {
   $('#tLogin').classList.toggle('on', !r); $('#tReg').classList.toggle('on', r);
   $('#nameL').hidden = !r; $('#nameL input').required = r;
   $('#title').textContent = r ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
-  $('#uLbl').textContent = r ? 'الإيميل' : 'اسم المستخدم أو الإيميل';
+  $('#uLbl').textContent = r ? 'الإيميل أو رقم الموبايل' : 'اسم المستخدم أو الإيميل أو الموبايل';
   $('#p').autocomplete = r ? 'new-password' : 'current-password';
   $('#go').textContent = r ? 'إنشاء الحساب' : 'دخول';
   $('#note').textContent = 'كلمة السر 8 حروف أو أكتر.'; $('#note').hidden = !r;

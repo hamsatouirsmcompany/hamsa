@@ -22,6 +22,11 @@ function setup() {
     if (s.getLastRow() === 0) s.appendRow(COLS[n]);
     else { const h = s.getRange(1, 1, 1, s.getLastColumn()).getValues()[0]; COLS[n].filter(c => !h.includes(c)).forEach((c, i) => s.getRange(1, h.length + i + 1).setValue(c)); } // يضيف أي عمود جديد
   });
+  // أعمدة نص: عشان أرقام الموبايل ما يتشالش منها الصفر اللي في الأول
+  sh('Users').getRange('A:A').setNumberFormat('@');  // اسم المستخدم (إيميل أو موبايل)
+  sh('Favs').getRange('A:A').setNumberFormat('@');
+  sh('Leads').getRange('D:D').setNumberFormat('@');  // موبايل الطلبات
+  sh('Leads').getRange('L:L').setNumberFormat('@');  // account
   if (!rows('Users').length) addUserRow(OWNER_USER, OWNER_NAME, 'owner', OWNER_PASS);
   if (!rows('Offers').length) seed();
 }
@@ -57,13 +62,27 @@ function addUserRow(username, name, role, pass) {
 }
 const out = o => ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
 
+// يوحّد المعرّف: إيميل -> حروف صغيرة، موبايل -> أرقام بس بصيغة 01xxxxxxxxx، غير كده يرجّعه زي ما هو (زي admin)
+function normId(v) {
+  v = String(v || '').trim();
+  if (v.includes('@')) return v.toLowerCase();
+  if (/^\+?[\d\s\-()]{8,20}$/.test(v)) {
+    let d = v.replace(/\D/g, '');
+    if (d.startsWith('0020')) d = '0' + d.slice(4);
+    else if (d.startsWith('20') && d.length === 12) d = '0' + d.slice(2);
+    else if (/^1[0125]\d{8}$/.test(d)) d = '0' + d;
+    return d;
+  }
+  return v;
+}
+
 // ---------- الدخول ----------
 function userOf(u) { // كاش 5 دقايق عشان ما نقراش شيت المستخدمين في كل طلب
   const c = CacheService.getScriptCache(), k = 'u_' + u, j = c.get(k);
   if (j) return JSON.parse(j);
-  const x = rows('Users').find(x => x.username === u && x.active === true);
+  const x = rows('Users').find(x => String(x.username) === String(u) && x.active === true);
   if (!x) return null;
-  const r = { username: x.username, name: x.name, role: x.role }; c.put(k, JSON.stringify(r), 300); return r;
+  const r = { username: String(x.username), name: x.name, role: x.role }; c.put(k, JSON.stringify(r), 300); return r;
 }
 function auth(token, ownerOnly, anyRole) {
   const u = token && CacheService.getScriptCache().get('s_' + token);
@@ -75,12 +94,12 @@ function auth(token, ownerOnly, anyRole) {
   return user;
 }
 function login(u, p) {
-  u = String(u || '').trim(); const c = CacheService.getScriptCache(), k = 'f_' + u.toLowerCase();
+  u = normId(u); const c = CacheService.getScriptCache(), k = 'f_' + u.toLowerCase();
   if (Number(c.get(k) || 0) >= 5) throw new Error('محاولات كتير. جرّب بعد 10 دقايق');
   const user = rows('Users').find(x => String(x.username).toLowerCase() === u.toLowerCase() && x.active === true);
   if (!user || user.hash !== hash(p, user.salt)) { c.put(k, String(Number(c.get(k) || 0) + 1), 600); throw new Error('بيانات الدخول غلط'); }
   const token = Utilities.getUuid() + Utilities.getUuid();
-  c.put('s_' + token, user.username, 21600);
+  c.put('s_' + token, String(user.username), 21600);
   return { token, name: user.name, role: user.role };
 }
 
@@ -102,23 +121,24 @@ function doPost(e) {
       case 'register': {
         const c = CacheService.getScriptCache(), n = Number(c.get('reg') || 0);
         if (n >= 30) throw new Error('حاول مرة تانية بعد شوية');
-        const email = String(d.email || '').trim().toLowerCase(), name = String(d.name || '').trim().slice(0, 60);
+        const email = normId(d.email), name = String(d.name || '').trim().slice(0, 60);
         if (name.length < 2) throw new Error('اكتب اسمك');
-        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 80) throw new Error('اكتب إيميل صحيح');
+        const isMail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) && email.length <= 80, isPhone = /^\d{8,15}$/.test(email);
+        if (!isMail && !isPhone) throw new Error('اكتب إيميل أو رقم موبايل صحيح');
         if (String(d.password || '').length < 8) throw new Error('كلمة السر 8 حروف أو أكتر');
-        if (rows('Users').some(x => String(x.username).toLowerCase() === email)) throw new Error('الإيميل ده مسجّل قبل كده. سجّل دخول');
+        if (rows('Users').some(x => String(x.username).toLowerCase() === email)) throw new Error('الإيميل أو الرقم ده مسجّل قبل كده. سجّل دخول');
         c.put('reg', String(n + 1), 3600);
         addUserRow(email, name, 'visitor', d.password);
         if (NOTIFY_EMAIL) try { MailApp.sendEmail(NOTIFY_EMAIL, 'حساب زائر جديد على الموقع', name + ' — ' + email); } catch (x) {}
         return out({ ok: true });
       }
       case 'favs': case 'toggleFav': {
-        const u = auth(d.token, false, true), r0 = rows('Favs').find(x => x.username === u.username);
+        const u = auth(d.token, false, true), r0 = rows('Favs').find(x => String(x.username) === u.username);
         const set = new Set(r0 && r0.ids ? String(r0.ids).split(',') : []);
         if (d.action === 'toggleFav') { const id = String(d.id || '').replace(/[^\w-]/g, '').slice(0, 40); if (id) { set.has(id) ? set.delete(id) : set.add(id); } upsert('Favs', 'username', { username: u.username, ids: [...set].slice(0, 100).join(',') }); }
         return out({ ids: [...set] });
       }
-      case 'myLeads': { const u = auth(d.token, false, true); return out({ leads: rows('Leads').filter(x => x.account === u.username).map(x => ({ time: x.time, service: x.service, status: x.status })).reverse() }); }
+      case 'myLeads': { const u = auth(d.token, false, true); return out({ leads: rows('Leads').filter(x => String(x.account) === u.username).map(x => ({ time: x.time, service: x.service, status: x.status })).reverse() }); }
       case 'lead': {
         if (d.website) return out({ ok: true }); // فخ للروبوتات
         let acc = ''; try { if (d.token) acc = auth(d.token, false, true).username; } catch (x) {}
@@ -176,11 +196,11 @@ function doPost(e) {
       case 'leads': auth(d.token); return out({ leads: rows('Leads').reverse() });
       case 'leadStatus': auth(d.token); upsert('Leads', 'id', { id: d.id, status: d.status }); return out({ ok: true });
       case 'users': auth(d.token, true); return out({ users: rows('Users').filter(u => u.role !== 'visitor').map(u => ({ username: u.username, name: u.name, role: u.role, active: u.active })) });
-      case 'visitors': auth(d.token, true); return out({ visitors: rows('Users').filter(u => u.role === 'visitor').map(u => ({ username: u.username, name: u.name, active: u.active === true, created: u.created || '' })).reverse() }); // الأحدث الأول
+      case 'visitors': auth(d.token, true); return out({ visitors: rows('Users').filter(u => u.role === 'visitor').map(u => ({ username: String(u.username), name: u.name, active: u.active === true, created: u.created || '' })).reverse() }); // الأحدث الأول
       case 'addUser': {
         const u = auth(d.token, true);
         if (!/^[a-zA-Z0-9_.@-]{3,40}$/.test(d.username) || String(d.password).length < 8) throw new Error('اسم المستخدم 3 حروف إنجليزي أو أكتر، وكلمة السر 8 أو أكتر');
-        if (rows('Users').some(x => x.username === d.username)) throw new Error('اسم المستخدم موجود');
+        if (rows('Users').some(x => String(x.username) === d.username)) throw new Error('اسم المستخدم موجود');
         addUserRow(d.username, d.name, 'staff', d.password); log(u.username, 'addUser', '', d.username); return out({ ok: true });
       }
       case 'setActive': {
