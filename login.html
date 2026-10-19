@@ -80,8 +80,12 @@ input{border-color:#e6d594}
     <button type="button" id="tReg" role="tab">حساب جديد</button>
   </div>
   <form id="f" novalidate>
+    <div class="seg" id="kindSeg" role="tablist" aria-label="طريقة التسجيل" hidden>
+      <button type="button" id="kMail" class="on" role="tab">إيميل</button>
+      <button type="button" id="kPhone" role="tab">رقم موبايل</button>
+    </div>
     <label id="nameL" hidden>الاسم<input name="name" autocomplete="name" enterkeyhint="next" maxlength="60"></label>
-    <label><span id="uLbl">اسم المستخدم أو الإيميل أو الموبايل</span><input name="u" required autocomplete="username" inputmode="text" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" dir="ltr" style="text-align:start"></label>
+    <label><span id="uLbl">اسم المستخدم أو الإيميل أو الموبايل</span><input name="u" id="u" required autocomplete="username" inputmode="text" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" dir="ltr" style="text-align:start"></label>
     <label>كلمة السر<span class="pw"><input name="p" id="p" type="password" required autocomplete="current-password" autocapitalize="none" enterkeyhint="go" dir="ltr" style="text-align:start"><button type="button" id="eye">إظهار</button></span></label>
     <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
     <div id="err" class="msg" role="alert" hidden></div>
@@ -94,7 +98,17 @@ input{border-color:#e6d594}
 // نفس رابط Apps Script اللي في common.js
 const API = 'https://script.google.com/macros/s/AKfycbxRr2PYw2kkY9TiAGVT0MfswIBsxYPtrVuRBvXjzrOTVdr7ueGHOSLjHkUEZkshPmEOFg/exec';
 const $ = s => document.querySelector(s);
-let reg = false;
+let reg = false, kind = 'mail';
+const AR = s => String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+function setKind(k) {
+  kind = k;
+  $('#kMail').classList.toggle('on', k === 'mail'); $('#kPhone').classList.toggle('on', k === 'phone');
+  if (!reg) return;
+  const u = $('#u'); u.value = '';
+  if (k === 'mail') { $('#uLbl').textContent = 'الإيميل'; u.type = 'email'; u.inputMode = 'email'; u.autocomplete = 'email'; u.removeAttribute('maxlength'); u.placeholder = 'name@example.com'; }
+  else { $('#uLbl').textContent = 'رقم الموبايل (11 رقم)'; u.type = 'tel'; u.inputMode = 'numeric'; u.autocomplete = 'tel'; u.maxLength = 11; u.placeholder = '01xxxxxxxxx'; }
+  $('#err').hidden = true;
+}
 
 // لو داخل بالفعل، حوّله على طول
 try { const m = JSON.parse(sessionStorage.getItem('me') || 'null'); if (m && sessionStorage.getItem('t')) location.replace(m.role === 'visitor' ? 'offers.html' : 'offers.html#admin'); } catch (e) {}
@@ -104,7 +118,10 @@ function mode(r) {
   $('#tLogin').classList.toggle('on', !r); $('#tReg').classList.toggle('on', r);
   $('#nameL').hidden = !r; $('#nameL input').required = r;
   $('#title').textContent = r ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
-  $('#uLbl').textContent = r ? 'الإيميل أو رقم الموبايل' : 'اسم المستخدم أو الإيميل أو الموبايل';
+  $('#kindSeg').hidden = !r;
+  const u = $('#u');
+  if (r) setKind(kind);
+  else { u.type = 'text'; u.inputMode = 'text'; u.autocomplete = 'username'; u.removeAttribute('maxlength'); u.placeholder = ''; $('#uLbl').textContent = 'اسم المستخدم أو الإيميل أو الموبايل'; }
   $('#p').autocomplete = r ? 'new-password' : 'current-password';
   $('#go').textContent = r ? 'إنشاء الحساب' : 'دخول';
   $('#note').textContent = 'كلمة السر 8 حروف أو أكتر.'; $('#note').hidden = !r;
@@ -112,6 +129,9 @@ function mode(r) {
 }
 $('#tLogin').onclick = () => mode(false);
 $('#tReg').onclick = () => mode(true);
+$('#kMail').onclick = () => setKind('mail');
+$('#kPhone').onclick = () => setKind('phone');
+$('#u').addEventListener('input', e => { if (reg && kind === 'phone') e.target.value = AR(e.target.value).replace(/\D/g, '').slice(0, 11); });
 $('#eye').onclick = () => { const p = $('#p'), s = p.type === 'password'; p.type = s ? 'text' : 'password'; $('#eye').textContent = s ? 'إخفاء' : 'إظهار'; };
 
 async function call(action, data) {
@@ -125,7 +145,14 @@ $('#f').onsubmit = async e => {
   if (f.website) return; // روبوت
   err.hidden = true; go.disabled = true;
   try {
-    if (reg) await call('register', { name: f.name, email: f.u, password: f.p });
+    if (reg) {
+      f.u = AR(f.u).trim();
+      if (String(f.name || '').trim().length < 2) throw new Error('اكتب اسمك');
+      if (kind === 'phone') { if (!/^\d{11}$/.test(f.u)) throw new Error('رقم الموبايل لازم يكون 11 رقم'); }
+      else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.u)) throw new Error('اكتب إيميل بصيغة صحيحة مثل name@example.com');
+      if (String(f.p || '').length < 8) throw new Error('كلمة السر لازم 8 حروف أو أكتر');
+      await call('register', { name: f.name, email: f.u, password: f.p });
+    }
     const r = await call('login', { u: f.u, p: f.p });
     sessionStorage.setItem('t', r.token);
     sessionStorage.setItem('me', JSON.stringify({ name: r.name, role: r.role }));
