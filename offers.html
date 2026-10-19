@@ -75,7 +75,7 @@ window.__op=fetch(window.__API+'?action=offers').then(function(r){return r.json(
 <script>
 
 // ضع هنا رابط الـ Web app بعد ما تنشره من Apps Script
-const CATS = { cash: 'عمرة الكاش', tayseer: 'عمرة التيسير', hajj: 'الحج' };
+const CATS = { cash: 'عمرة الكاش', tayseer: 'عمرة التيسير', hajj: 'الحج · موسم 1448هـ' };
 let favs = new Set(), offers = [], cat = 'cash';
 const QP = new URLSearchParams(location.search);
 if (QP.get('cat') in CATS) cat = QP.get('cat');

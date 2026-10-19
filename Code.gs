@@ -274,5 +274,9 @@ function hajj1448Offers() {
     if (ex[o.id]) upsert('Offers', 'id', Object.assign({ updatedBy: 'seed', updatedAt: now() }, o));
     else upsert('Offers', 'id', Object.assign({ status: 'active', updatedBy: 'seed', updatedAt: now() }, o));
   });
+  // يخفي عروض الحج القديمة (من seed) عشان ما تظهرش جنب برامج 1448. بتتخفي بس، مش بتتحذف، وتقدر تظهرها تاني من لوحة التحكم.
+  const OLD = ['الحج السياحي', 'الحج الميسر', 'الحج الميسر بالتقسيط'];
+  rows('Offers').filter(o => OLD.includes(String(o.title).trim()) && o.status === 'active').forEach(o =>
+    upsert('Offers', 'id', { id: o.id, status: 'hidden', updatedBy: 'seed', updatedAt: now() }));
   bust();
 }
