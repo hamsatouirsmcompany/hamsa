@@ -33,7 +33,7 @@ if ($('#adminBtn')) $('#adminBtn').onclick = () => { location.href = 'offers.htm
       setTimeout(() => { el.classList.add('done'); el.style.transitionDelay = ''; }, d + 950);
     });
   }, { threshold: .12, rootMargin: '0px 0px -40px 0px' });
-  const sel = '.fc,.ty,.gi,.hc,.hgh,.bn,.pst li,.hmc,.vd-f,#contact form,#pay h2,#contact h2';
+  const sel = '.fc,.ty,.hj,.gi,.hc,.hgh,.bn,.pst li,.hmc,.vd-f,#contact form,#pay h2,#contact h2';
   function scan() { document.querySelectorAll(sel).forEach(el => { if (el.dataset.rv) return; el.dataset.rv = 1; el.classList.add('rv'); io.observe(el); }); }
   let _sq; scan(); new MutationObserver(() => { cancelAnimationFrame(_sq); _sq = requestAnimationFrame(scan); }).observe(document.body, { childList: true, subtree: true });
 })();
