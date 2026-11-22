@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>فائزؤن التيسير | همسة للسياحة</title>
+<title>فائزو التيسير | همسة للسياحة</title>
 <meta name="description" content="أسماء الفائزين في قرعة مبادرة تيسير العمرة من همسة للسياحة.">
 <link rel="icon" href="images/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -101,7 +101,8 @@ function paint() {
   reveal();
 }
 function tabs() {
-  const gs = ['', ...new Set(ALL.map(r => r['المجموعه']).filter(Boolean))];
+  const num = g => +(String(g).match(/\d+/) || [0])[0], pre = g => String(g).replace(/\s*\d+\s*$/, '').trim();
+  const gs = ['', ...[...new Set(ALL.map(r => r['المجموعه']).filter(Boolean))].sort((x, y) => (pre(x).startsWith('همسه') ? 0 : 1) - (pre(y).startsWith('همسه') ? 0 : 1) || pre(x).localeCompare(pre(y), 'ar') || num(x) - num(y))];
   $('#gt').innerHTML = gs.map(g => `<button type="button" data-g="${esc(g)}" class="${g === grp ? 'on' : ''}" aria-pressed="${g === grp}">${esc(g || 'كل المجموعات')}</button>`).join('');
 }
 function cnt(el, to) {
