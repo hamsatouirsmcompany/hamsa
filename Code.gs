@@ -13,6 +13,7 @@ const COLS = {
   Users: ['username','name','role','salt','hash','active','created'],
   Log: ['time','user','action','offerId','data'],
   Favs: ['username','ids'],
+  Live: ['key','value'],
   Winners: ['اسم العميل','الفرع','المجموعه','تاريخ الاشتراك','المجاني','الجائزة']
 };
 
@@ -104,6 +105,11 @@ function login(u, p) {
   return { token, name: user.name, role: user.role };
 }
 
+
+// ---------- البث المباشر (ورقة Live: cfg عام، whip سري) ----------
+const liveKV = k => { if (!sh('Live')) return ''; const r = rows('Live').find(x => x.key === k); return r ? String(r.value) : ''; };
+function liveCfg() { try { return JSON.parse(liveKV('cfg') || '{}'); } catch (e) { return {}; } }
+
 // ---------- الواجهة العامة ----------
 function doGet(e) {
   const c = CacheService.getScriptCache();
@@ -117,6 +123,11 @@ function doGet(e) {
       try { c.put('win', w, 120); } catch (x) {}
     }
     return ContentService.createTextOutput(w).setMimeType(ContentService.MimeType.JSON);
+  }
+  if (e && e.parameter && e.parameter.action === 'live') { // بيانات البث (بدون الـ WHIP السري)
+    let l = c.get('live');
+    if (!l) { l = JSON.stringify({ live: liveCfg() }); try { c.put('live', l, 15); } catch (x) {} }
+    return ContentService.createTextOutput(l).setMimeType(ContentService.MimeType.JSON);
   }
   let j = c.get('pub');
   if (!j) {
@@ -220,6 +231,15 @@ function doPost(e) {
         const u = auth(d.token, true);
         if (d.username === u.username) throw new Error('مينفعش توقف حسابك');
         upsert('Users', 'username', { username: d.username, active: !!d.active }); CacheService.getScriptCache().remove('u_' + d.username); log(u.username, 'setActive', '', d); return out({ ok: true });
+      }
+      case 'liveGet': auth(d.token); return out({ live: liveCfg(), whip: liveKV('whip') });
+      case 'liveSave': {
+        const u = auth(d.token), v = d.live || {}, S = (x, n) => String(x || '').trim().slice(0, n);
+        const cfg = { status: ['off', 'soon', 'live', 'ended'].includes(v.status) ? v.status : 'off', url: S(v.url, 600), title: S(v.title, 100), desc: S(v.desc, 200), when: S(v.when, 80), note: S(v.note, 200), updatedAt: now() };
+        if (cfg.url && !/^https:\/\//i.test(cfg.url.replace(/^[^h]*(?=https)/i, ''))) throw new Error('اللينك لازم يبدأ بـ https');
+        upsert('Live', 'key', { key: 'cfg', value: JSON.stringify(cfg) });
+        if (d.whip !== undefined) upsert('Live', 'key', { key: 'whip', value: S(d.whip, 500) });
+        CacheService.getScriptCache().remove('live'); log(u.username, 'live', '', { status: cfg.status, title: cfg.title }); return out({ ok: true });
       }
       default: throw new Error('طلب غير معروف');
     }

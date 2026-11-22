@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>التحكم في البث | همسة للسياحة</title>
+<link rel="icon" href="images/favicon.png">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'"><noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="style.css">
+<style>
+.aw{max-width:1000px;margin:0 auto;padding:20px 5vw;display:grid;gap:16px}
+.pn{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:12px}.pn h2{margin:0;font-size:1.15rem;color:var(--g)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:760px){.cols{grid-template-columns:1fr}}
+.seg4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.seg4 button{background:var(--card);color:var(--ink);border-color:var(--line)}.seg4 button.on{background:var(--hd);color:var(--y);border-color:var(--y)}.seg4 button.on.lv{background:#b3261e;color:#fff;border-color:#b3261e}
+video,.pv iframe{width:100%;aspect-ratio:16/9;background:#0b1738;border:0;border-radius:12px;display:block}
+.r{display:flex;gap:8px;flex-wrap:wrap}.r>*{flex:1}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#999;margin-inline-end:6px}.dot.on{background:#1f9d55}
+</style>
+</head>
+<body>
+<header><span style="font-weight:700">التحكم في البث المباشر</span><span class="acts"><a class="btn o" href="live.html" target="_blank" style="color:#fff;border-color:#fff8">صفحة البث ↗</a> <button id="out" type="button" hidden>خروج</button></span></header>
+
+<div class="aw" id="lg" hidden><form class="pn" id="lf" style="max-width:420px;margin:30px auto;width:100%"><h2>تسجيل دخول الإدارة</h2>
+<label>اسم المستخدم<input name="u" autocomplete="username" dir="ltr" required></label>
+<label>كلمة السر<input name="p" type="password" autocomplete="current-password" dir="ltr" required></label>
+<div class="msg er" id="le" hidden></div><button type="submit" class="bk" style="background:var(--y);border-color:var(--y);color:var(--hd);font-weight:700">دخول</button></form></div>
+
+<div class="aw" id="ad" hidden>
+<section class="pn"><h2>1) حالة البث</h2>
+<div class="seg4" id="st"><button type="button" data-v="off">إيقاف</button><button type="button" data-v="soon">قريبًا</button><button type="button" data-v="live" class="lv">مباشر</button><button type="button" data-v="ended">انتهى</button></div>
+<label>لينك البث (Cloudflare أو YouTube أو Facebook، أو كود iframe)<input id="url" dir="ltr" placeholder="https://www.youtube.com/watch?v=..." inputmode="url"></label>
+<div class="msg er" id="ue" hidden>اللينك مش مدعوم. استخدم Cloudflare Stream أو YouTube أو Facebook (https).</div>
+</section>
+
+<div class="cols"><section class="pn"><h2>2) الكلام اللي على الصفحة</h2>
+<label>عنوان البث<input id="title" maxlength="100"></label>
+<label>وصف قصير<input id="desc" maxlength="200"></label>
+<label>موعد البث (يظهر في حالة «قريبًا»)<input id="when" maxlength="80" placeholder="الخميس 9 مساءً"></label>
+<label>شريط الإعلان تحت الفيديو (اختياري)<textarea id="note" rows="2" maxlength="200"></textarea></label>
+<button type="button" id="save" class="bk" style="background:var(--y);border-color:var(--y);color:var(--hd);font-weight:700">حفظ ونشر</button><div id="sm" class="msg ok" hidden></div></section>
+<section class="pn"><h2>معاينة</h2><div class="pv" id="pv"><p class="empty">حط لينك عشان تشوف المعاينة.</p></div></section></div>
+
+<section class="pn"><h2>3) البث من الكاميرا (Cloudflare Stream)</h2>
+<p class="meta" style="margin:0">من Cloudflare: Stream ← Live Inputs ← افتح الـ Input ← انسخ <b>WebRTC (WHIP) URL</b> وحطه هنا، وانسخ لينك الـ iframe في خانة اللينك فوق. الـ WHIP سري ومش بيظهر للزوار.</p>
+<label>WHIP URL<input id="whip" dir="ltr" placeholder="https://customer-xxxx.cloudflarestream.com/xxxx/webRTC/publish" inputmode="url"></label>
+<div class="r"><select id="src" aria-label="المصدر"><option value="user">كاميرا أمامية</option><option value="environment">كاميرا خلفية</option><option value="screen">مشاركة الشاشة</option></select><button type="button" id="go">ابدأ الإرسال</button><button type="button" id="stop" class="d" disabled>إيقاف الإرسال</button></div>
+<video id="cam" muted playsinline></video><div class="meta"><span class="dot" id="dt"></span><span id="cs">متوقف</span></div></section>
+</div>
+<div id="toast" role="status"></div>
+<script src="common.js"></script>
+<script src="live.js"></script>
+<script>
+let S = { status: 'off' }, pc = null, ms = null;
+const toast = (t, bad) => { const e = $('#toast'); e.textContent = t; e.className = 'show' + (bad ? ' bad' : ''); setTimeout(() => e.className = '', 2500); };
+function gate() { const ok = me && me.role !== 'visitor' && token; $('#lg').hidden = !!ok; $('#ad').hidden = !ok; $('#out').hidden = !ok; if (ok) init(); }
+window.onLogout = () => { stopCam(); gate(); };
+$('#out').onclick = () => logout();
+$('#lf').onsubmit = async e => {
+  e.preventDefault(); const f = Object.fromEntries(new FormData(e.target)), er = $('#le'); er.hidden = true;
+  try { const r = await (await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'login', u: f.u, p: f.p }) })).json(); if (r.error) throw new Error(r.error);
+    if (r.role === 'visitor') throw new Error('الصفحة دي للإدارة بس');
+    token = r.token; me = { name: r.name, role: r.role }; sessionStorage.setItem('t', token); sessionStorage.setItem('me', JSON.stringify(me)); gate();
+  } catch (x) { er.hidden = false; er.textContent = x.message; }
+};
+function setSt(v) { S.status = v; document.querySelectorAll('#st button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); }
+$('#st').onclick = e => { if (e.target.dataset.v) setSt(e.target.dataset.v); };
+function prev() { const L = liveSrc($('#url').value); $('#ue').hidden = !$('#url').value.trim() || !!L; $('#pv').innerHTML = L ? `<iframe src="${esc(L.src.replace(/autoplay=(true|1)/, 'autoplay=0'))}" allowfullscreen title="معاينة"></iframe>` : '<p class="empty">حط لينك عشان تشوف المعاينة.</p>'; }
+$('#url').oninput = prev;
+async function init() {
+  if (init.d) return; init.d = 1;
+  try { const r = await api('liveGet'), c = r.live || {}; setSt(c.status || 'off'); ['url', 'title', 'desc', 'when', 'note'].forEach(k => $('#' + k).value = c[k] || ''); $('#whip').value = r.whip || ''; prev(); }
+  catch (x) { init.d = 0; toast(x.message, 1); }
+}
+$('#save').onclick = async () => {
+  if ($('#url').value.trim() && !liveSrc($('#url').value)) return toast('لينك البث مش مدعوم', 1);
+  if (S.status === 'live' && !liveSrc($('#url').value)) return toast('حط لينك البث الأول', 1);
+  try { await api('liveSave', { live: { status: S.status, url: $('#url').value.trim(), title: $('#title').value, desc: $('#desc').value, when: $('#when').value, note: $('#note').value }, whip: $('#whip').value.trim() }); toast('اتحفظ واتنشر ✓'); }
+  catch (x) { toast(x.message, 1); }
+};
+// ----- الإرسال من الكاميرا عبر WHIP (Cloudflare) -----
+const cs = (t, on) => { $('#cs').textContent = t; $('#dt').classList.toggle('on', !!on); };
+function stopCam() { if (pc) pc.close(); pc = null; if (ms) ms.getTracks().forEach(t => t.stop()); ms = null; $('#cam').srcObject = null; $('#go').disabled = false; $('#stop').disabled = true; cs('متوقف'); }
+$('#stop').onclick = stopCam;
+$('#go').onclick = async () => {
+  const url = $('#whip').value.trim(); if (!/^https:\/\/[\w.-]+\.cloudflarestream\.com\//.test(url)) return toast('اكتب WHIP URL صحيح من Cloudflare', 1);
+  $('#go').disabled = true; cs('جاري الاتصال…');
+  try {
+    const k = $('#src').value;
+    ms = k === 'screen' ? await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }) : await navigator.mediaDevices.getUserMedia({ video: { facingMode: k, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: true });
+    $('#cam').srcObject = ms; $('#cam').play().catch(() => {});
+    pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }], bundlePolicy: 'max-bundle' });
+    ms.getTracks().forEach(t => pc.addTransceiver(t, { direction: 'sendonly' }));
+    pc.onconnectionstatechange = () => { const s = pc && pc.connectionState; if (s === 'connected') cs('بيتم الإرسال ✓', 1); else if (s === 'failed' || s === 'disconnected') { cs('انقطع الاتصال'); toast('انقطع الإرسال', 1); } };
+    await pc.setLocalDescription(await pc.createOffer());
+    await new Promise(res => { if (pc.iceGatheringState === 'complete') return res(); const t = setTimeout(res, 2500); pc.onicegatheringstatechange = () => { if (pc.iceGatheringState === 'complete') { clearTimeout(t); res(); } }; });
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/sdp' }, body: pc.localDescription.sdp });
+    if (!r.ok) throw new Error('Cloudflare رفض الاتصال (' + r.status + '). راجع الـ WHIP URL');
+    await pc.setRemoteDescription({ type: 'answer', sdp: await r.text() });
+    $('#stop').disabled = false; ms.getVideoTracks()[0].onended = stopCam;
+  } catch (x) { stopCam(); toast(x.name === 'NotAllowedError' ? 'اسمح بالكاميرا من المتصفح' : x.message, 1); }
+};
+addEventListener('beforeunload', () => { if (pc) pc.close(); });
+gate();
+</script>
+</body>
+</html>
