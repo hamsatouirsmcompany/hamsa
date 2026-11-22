@@ -13,7 +13,7 @@ const COLS = {
   Users: ['username','name','role','salt','hash','active','created'],
   Log: ['time','user','action','offerId','data'],
   Favs: ['username','ids'],
-  Winners: ['الكود','اسم العميل','الفرع','المجموعه','تاريخ الاشتراك','المجاني','الجائزة']
+  Winners: ['اسم العميل','الفرع','المجموعه','تاريخ الاشتراك','المجاني','الجائزة']
 };
 
 function setup() {
@@ -111,7 +111,7 @@ function doGet(e) {
     let w = c.get('win');
     if (!w) {
       const s = sh('Winners'), list = !s ? [] : rows('Winners').filter(r => r['اسم العميل']).map(r => ({
-        'الكود': r['الكود'], 'اسم العميل': r['اسم العميل'], 'المجموعه': r['المجموعه'], 'المجاني': r['المجاني'], 'الجائزة': r['الجائزة']
+        'اسم العميل': r['اسم العميل'], 'المجموعه': r['المجموعه'], 'المجاني': r['المجاني'], 'الجائزة': r['الجائزة']
       }));
       w = JSON.stringify({ winners: list });
       try { c.put('win', w, 120); } catch (x) {}
