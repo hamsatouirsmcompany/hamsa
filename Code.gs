@@ -12,7 +12,8 @@ const COLS = {
   Leads: ['id','time','name','phone','governorate','service','people','travelDate','payment','notes','status','account'],
   Users: ['username','name','role','salt','hash','active','created'],
   Log: ['time','user','action','offerId','data'],
-  Favs: ['username','ids']
+  Favs: ['username','ids'],
+  Winners: ['الكود','اسم العميل','الفرع','المجموعه','تاريخ الاشتراك','المجاني','الجائزة']
 };
 
 function setup() {
@@ -104,8 +105,20 @@ function login(u, p) {
 }
 
 // ---------- الواجهة العامة ----------
-function doGet() {
-  const c = CacheService.getScriptCache(); let j = c.get('pub');
+function doGet(e) {
+  const c = CacheService.getScriptCache();
+  if (e && e.parameter && e.parameter.action === 'winners') { // فائزو التيسير (ورقة Winners)
+    let w = c.get('win');
+    if (!w) {
+      const s = sh('Winners'), list = !s ? [] : rows('Winners').filter(r => r['اسم العميل']).map(r => ({
+        'الكود': r['الكود'], 'اسم العميل': r['اسم العميل'], 'المجموعه': r['المجموعه'], 'المجاني': r['المجاني'], 'الجائزة': r['الجائزة']
+      }));
+      w = JSON.stringify({ winners: list });
+      try { c.put('win', w, 120); } catch (x) {}
+    }
+    return ContentService.createTextOutput(w).setMimeType(ContentService.MimeType.JSON);
+  }
+  let j = c.get('pub');
   if (!j) {
     j = JSON.stringify({ offers: rows('Offers').filter(o => o.status === 'active').map(o => { delete o.updatedBy; return o; }) });
     try { c.put('pub', j, 120); } catch (x) {}
