@@ -1,7 +1,7 @@
 // ===== كود مشترك بين كل الصفحات =====
 window.__API = window.__API || 'https://script.google.com/macros/s/AKfycbxRr2PYw2kkY9TiAGVT0MfswIBsxYPtrVuRBvXjzrOTVdr7ueGHOSLjHkUEZkshPmEOFg/exec';
 const API = window.__API;
-const WA = '201010336305';
+const WA = '201026666454';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let token = sessionStorage.getItem('t'), me = null;
