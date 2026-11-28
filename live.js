@@ -11,9 +11,9 @@ function liveSrc(u) {
   if (h === 'youtu.be' || h === 'youtube.com' || h === 'youtube-nocookie.com') {
     const p = x.pathname; let id = h === 'youtu.be' ? p.slice(1) : x.searchParams.get('v') || (p.match(/^\/(?:live|embed|shorts)\/([\w-]{6,})/) || [])[1];
     const ch = (p.match(/^\/channel\/(UC[\w-]+)/) || [])[1] || (/live_stream/.test(p) ? x.searchParams.get('channel') : '');
-    const q = '?autoplay=1&mute=1&rel=0&playsinline=1';
+    const q = '?autoplay=1&mute=1&rel=0&playsinline=1&controls=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&enablejsapi=1';
     if (id && /^[\w-]{6,20}$/.test(id)) return { k: 'yt', src: 'https://www.youtube-nocookie.com/embed/' + id + q, open: u };
-    if (ch && /^UC[\w-]+$/.test(ch)) return { k: 'yt', src: 'https://www.youtube-nocookie.com/embed/live_stream?channel=' + ch + '&autoplay=1&mute=1', open: u };
+    if (ch && /^UC[\w-]+$/.test(ch)) return { k: 'yt', src: 'https://www.youtube-nocookie.com/embed/live_stream?channel=' + ch + '&autoplay=1&mute=1&rel=0&playsinline=1&controls=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&enablejsapi=1', open: u };
     return null;
   }
   if (h === 'facebook.com' || h === 'fb.watch') return { k: 'fb', src: 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(u) + '&show_text=false&autoplay=true&mute=1', open: u };

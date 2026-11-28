@@ -22,6 +22,13 @@
 .lp .ph2{padding:24px;max-width:46ch}.lp .ph2 b{display:block;font-size:1.4rem;color:var(--y);margin-bottom:6px}
 .ln{margin-top:12px;padding:12px 18px;border-radius:12px;background:linear-gradient(135deg,#e3ebfa,#fff8d6);border:1px solid var(--line);color:#101b36;font-weight:700;text-align:center;white-space:pre-line}
 .lo{text-align:center;margin-top:12px}
+.lp{position:relative}
+.lp.yt iframe{position:absolute;left:0;top:-64px;width:100%;height:calc(100% + 128px);pointer-events:none}
+.lg{position:absolute;top:10px;right:10px;z-index:3;pointer-events:none;background:rgba(11,23,56,.55);border-radius:10px;padding:5px 9px;backdrop-filter:blur(4px)}
+.lg img{height:34px;width:auto;display:block}
+.sh{position:absolute;left:0;right:0;top:0;height:56px;z-index:2}
+.um{position:absolute;bottom:12px;left:12px;z-index:3;border:0;border-radius:20px;padding:8px 14px;background:var(--y);color:#14295f;font:700 .9rem inherit;cursor:pointer}
+@media(max-width:600px){.lg img{height:26px}}
 @media(prefers-reduced-motion:reduce){.lb.live:before{animation:none}}
 </style>
 </head>
@@ -38,6 +45,11 @@
 <script>
 ui();
 let cur = '';
+$('#lp').addEventListener('click', e => {
+  const b = e.target.closest('.um'); if (!b) return;
+  const f = $('#lp iframe'); if (f) { ['unMute', 'playVideo'].forEach(c => f.contentWindow.postMessage(JSON.stringify({ event: 'command', func: c, args: [] }), '*')); f.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*'); }
+  b.remove();
+});
 const ST = { live: 'مباشر الآن', soon: 'قريبًا', ended: 'انتهى البث', off: 'البث المباشر' };
 function draw(c) {
   c = c || {}; const st = ST[c.status] ? c.status : 'off', L = liveSrc(c.url), box = $('#lp');
@@ -45,14 +57,16 @@ function draw(c) {
   $('#lbd').textContent = ST[st]; $('#lbd').className = 'lb' + (st === 'live' ? ' live' : '');
   document.title = (st === 'live' ? '🔴 ' : '') + (c.title || 'البث المباشر') + ' | همسة للسياحة';
   if (st === 'live' && L) {
-    if (cur !== L.src) { cur = L.src; box.innerHTML = `<iframe src="${esc(L.src)}" title="البث المباشر" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`; }
+    if (cur !== L.src) {
+      cur = L.src; box.className = 'lp ' + L.k;
+      box.innerHTML = `<iframe src="${esc(L.src)}" title="البث المباشر" sandbox="allow-scripts allow-same-origin allow-presentation" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>${L.k === 'fb' ? '<div class="sh"></div>' : ''}<span class="lg"><img src="images/logo-live.webp" alt="همسة للسياحة"></span>${L.k === 'yt' ? '<button class="um" type="button">🔊 تشغيل الصوت</button>' : ''}`;
+    }
   } else {
-    cur = '';
+    cur = ''; box.className = 'lp';
     const t = { soon: ['البث هيبدأ قريب', c.when ? 'الموعد: ' + c.when : 'خليك معانا وهتلاقي البث هنا أول ما يبدأ.'], ended: ['انتهى البث', 'شكرًا لمتابعتكم. تابعونا في البث الجاي.'] }[st] || ['مفيش بث دلوقتي', 'هنعلن عن موعد البث الجاي هنا.'];
     box.innerHTML = `<div class="ph2"><b>${esc(t[0])}</b>${esc(t[1])}</div>`;
   }
   const n = $('#ln'); n.hidden = !c.note; n.textContent = c.note || '';
-  const o = $('#lo'); o.hidden = !(st === 'live' && L); o.innerHTML = L ? `<a class="btn o" target="_blank" rel="noopener" href="${esc(L.open)}">لو البث مش شغال، افتحه في نافذة جديدة</a>` : '';
 }
 async function load() {
   try { const j = await (await fetch(API + '?action=live')).json(); if (j && j.live) { draw(j.live); try { localStorage.setItem('hm_live', JSON.stringify(j.live)); } catch (e) {} } } catch (e) {}
